@@ -1,0 +1,28 @@
+{
+  "name": "talkbackserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:AccessControl": "nodemon --watch ./TalkBackServer.AccessControl ./TalkBackServer.AccessControl/app.js",
+    "start:Chat": "nodemon --watch ./TalkBackServer.Chat ./TalkBackServer.Chat/app.js",
+    "start:Game": "nodemon --watch ./TalkBackServer.Game ./TalkBackServer.Game/app.js",
+    "start:OnlineUsers": "nodemon --watch ./TalkBackServer.OnlineUsers ./TalkBackServer.OnlineUsers/app.js",
+    "start:all": "concurrently \"npm: start:AccessControl\" \"npm: start:Chat\" \"npm: start:Game\" \"npm: start:OnlineUsers\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.2.2",
+    "nodemon": "^3.1.0"
+  }
+}
