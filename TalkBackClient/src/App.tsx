@@ -2,13 +2,18 @@ import "./App.css";
 import { useAuth } from "./hooks/useAuth";
 import { AuthContext } from "./context/auth-context";
 import AuthComponent from "./pages/Auth";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/auth",
     element: <AuthComponent />,
   },
+  { path: "*", element: <Navigate to="/auth" replace /> },
 ]);
 
 function App() {

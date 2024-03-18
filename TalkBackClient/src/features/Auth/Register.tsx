@@ -1,20 +1,16 @@
-import React, { FormEvent, useContext, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { AuthContext } from "../../context/auth-context";
+import { useNavigate } from "react-router";
 
-
-interface LoginResponse {
-  userId: string;
-  token: string;
-  refreshToken: string;
-  username: string;
+interface RegisterResponse {
+  message: string;
 }
 
 export default function Register() {
   const { isLoading, sendRequest } = useHttpClient();
-  const auth = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [error, setError] = useState("");
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -34,7 +30,7 @@ export default function Register() {
 
     const handleRegister = async () => {
       try {
-        const responseData = await sendRequest<LoginResponse>(
+        const responseData = await sendRequest<RegisterResponse>(
           `http://localhost:3001/api/users/register`,
           "POST",
           {
@@ -42,15 +38,13 @@ export default function Register() {
             password,
           }
         );
-
-        auth.login(
-          responseData.userId,
-          responseData.token,
-          responseData.refreshToken,
-          responseData.username
-        );
+        if (!responseData) {
+          throw new Error("Register failed");
+        }
+        localStorage.setItem("userName", username);
+        navigate(`/auth?type=login`);
       } catch (err) {
-        console.log(err);
+        setError("Resitration failed, please try again");
       }
     };
 
@@ -100,13 +94,11 @@ export default function Register() {
             margin="normal"
             sx={{ backgroundColor: "#FFF" }}
           />
-          <div>
-            {error !== "" && (
-              <Typography color={"#f44336"} sx={{ padding: 0 }}>
-                {error}
-              </Typography>
-            )}
-          </div>
+          {error !== "" && (
+            <Typography color={"#f44336"} sx={{ padding: 0 }}>
+              {error}
+            </Typography>
+          )}
           <Button
             type="submit"
             variant="contained"
