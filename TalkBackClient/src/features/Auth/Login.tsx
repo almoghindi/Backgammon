@@ -3,6 +3,8 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
+import { AxiosError } from "axios";
+import useAuthValidations from "../../hooks/useAuthValidations";
 
 interface LoginResponse {
   userId: string;
@@ -14,6 +16,8 @@ interface LoginResponse {
 const LoginPage: React.FC = () => {
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
+  const { usernameError, passwordError, isLoginFormValid, error, setError } =
+    useAuthValidations();
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -21,6 +25,8 @@ const LoginPage: React.FC = () => {
     const formData = new FormData(event.currentTarget);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
+
+    if (!isLoginFormValid(username, password)) return;
 
     // console.log({ username, password });
     const handleLogin = async () => {
@@ -41,7 +47,11 @@ const LoginPage: React.FC = () => {
           responseData.username
         );
       } catch (err) {
-        console.log(err);
+        if (err instanceof AxiosError) {
+          setError(err.response?.data.message);
+        } else {
+          setError("Login failed");
+        }
       }
     };
 
@@ -70,6 +80,8 @@ const LoginPage: React.FC = () => {
             variant="outlined"
             name="username"
             fullWidth
+            error={usernameError !== ""}
+            helperText={usernameError}
             margin="normal"
             sx={{ backgroundColor: "#FFF" }}
           />
@@ -79,9 +91,16 @@ const LoginPage: React.FC = () => {
             variant="outlined"
             name="password"
             fullWidth
+            error={passwordError !== ""}
+            helperText={passwordError}
             margin="normal"
             sx={{ backgroundColor: "#FFF" }}
           />
+          {error !== "" && (
+            <Typography color={"#f44336"} sx={{ padding: 0 }}>
+              {error}
+            </Typography>
+          )}
           <div>
             <Button
               type="submit"
