@@ -1,7 +1,20 @@
 import "./App.css";
-import LoginPage from "./features/Auth/Login";
 import { useAuth } from "./hooks/useAuth";
 import { AuthContext } from "./context/auth-context";
+import AuthComponent from "./pages/Auth";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+
+const router = createBrowserRouter([
+  {
+    path: "/auth",
+    element: <AuthComponent />,
+  },
+  { path: "*", element: <Navigate to="/auth" replace /> },
+]);
 
 function App() {
   const { token, login, logout, userId, username } = useAuth();
@@ -10,14 +23,14 @@ function App() {
       <AuthContext.Provider
         value={{
           isLoggedIn: !!token,
-          userId: userId,
-          token: token,
-          username: username,
-          login: login,
-          logout: logout,
+          userId,
+          token,
+          username,
+          login,
+          logout,
         }}
       >
-        <LoginPage />
+        <RouterProvider router={router} />
       </AuthContext.Provider>
     </>
   );
