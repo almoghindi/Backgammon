@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    console.log({ username, password });
+    // console.log({ username, password });
     const handleLogin = async () => {
       try {
         const responseData = await sendRequest<LoginResponse>(

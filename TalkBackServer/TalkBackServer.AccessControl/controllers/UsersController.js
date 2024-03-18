@@ -29,7 +29,7 @@ export const register = async (req, res, next) => {
   }
 
   if (existingUser) {
-    res.send({ error: "User already exists, please login" });
+    res.status(400).send({ error: "User already exists, please login" });
   }
 
   let hashedPassword;
@@ -67,7 +67,7 @@ export const login = async (req, res, next) => {
   }
 
   if (!existingUser) {
-    const error = new HttpError("Wrong credentials, please try again", 500);
+    const error = new HttpError("Wrong credentials, please try again", 401);
     return next(error);
   }
 
@@ -80,7 +80,7 @@ export const login = async (req, res, next) => {
   }
 
   if (!isValidPassword) {
-    const error = new HttpError("Wrong credentials, please try again", 500);
+    const error = new HttpError("Wrong credentials, please try again", 401);
     return next(error);
   }
   const refreshToken = generateRefreshToken(existingUser._id);
