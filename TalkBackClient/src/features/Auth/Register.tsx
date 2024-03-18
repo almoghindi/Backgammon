@@ -99,15 +99,17 @@ export default function Register() {
               {error}
             </Typography>
           )}
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 3 }}
-          >
-            Register
-          </Button>
+          <div>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 3, width: "25%" }}
+            >
+              Register
+            </Button>
+          </div>
         </form>
       </Box>
     </>
