@@ -6,7 +6,6 @@ import { Button, Box } from "@mui/material";
 
 export default function AuthComponent() {
   const [isLoginPage, setIsLogin] = useState<boolean>(false);
-  //   const { type } = useParams(); //login || register
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const type = queryParams.get("type");
@@ -18,7 +17,6 @@ export default function AuthComponent() {
   }
 
   useEffect(() => {
-    console.log("mounted " + type);
     if (type) {
       setIsLogin(type === "login");
       return;

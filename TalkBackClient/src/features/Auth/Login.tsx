@@ -25,6 +25,10 @@ const LoginPage: React.FC = () => {
     }
   }, []);
 
+  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -79,6 +83,7 @@ const LoginPage: React.FC = () => {
             variant="outlined"
             name="username"
             value={username}
+            onChange={handleUsernameChange}
             fullWidth
             required
             margin="normal"
