@@ -35,7 +35,7 @@ export function getRegisterValidation(
     return "Username is too short, must be at least 3 chracters!";
   }
 
-  if (isValidPassword(password)) {
+  if (!isValidPassword(password)) {
     return "Password should contain at least 8 chracters, Upper and lower cases and number.";
   }
 

@@ -33,7 +33,7 @@ export const useAuth = () => {
         token: token,
         refreshToken: refreshToken,
         expiration: tokenExpirationDate.toISOString(),
-        username,
+        username: username,
       };
       localStorage.setItem("userData", JSON.stringify(userData));
     },
@@ -41,7 +41,6 @@ export const useAuth = () => {
   );
 
   const logout = useCallback(() => {
-    localStorage.setItem("userName", username);
     setToken("");
     setRefreshToken("");
     setTokenExpirationDate(null);
@@ -76,7 +75,7 @@ export const useAuth = () => {
           .post(
             "http://localhost:3001/api/users/refresh",
             {
-              refreshToken: refreshToken,
+              refreshToken,
             },
             {
               headers: {
