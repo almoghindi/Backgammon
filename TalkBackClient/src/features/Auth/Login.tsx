@@ -13,6 +13,7 @@ interface LoginResponse {
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   const { isLoading, sendRequest } = useHttpClient();
@@ -29,12 +30,12 @@ const LoginPage: React.FC = () => {
     setUsername(event.target.value);
   };
 
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
 
     const handleLogin = async () => {
       try {
@@ -94,6 +95,8 @@ const LoginPage: React.FC = () => {
             type="password"
             variant="outlined"
             name="password"
+            value={password}
+            onChange={handlePasswordChange}
             required
             fullWidth
             margin="normal"
