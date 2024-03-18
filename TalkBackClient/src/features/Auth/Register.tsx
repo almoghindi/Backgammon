@@ -1,8 +1,9 @@
-import React, { FormEvent, useState } from "react";
+import { FormEvent } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useNavigate } from "react-router";
+import useRegisterValidations from "../../hooks/useRegisterValidations.tsx";
 
 interface RegisterResponse {
   message: string;
@@ -11,8 +12,14 @@ interface RegisterResponse {
 export default function Register() {
   const { isLoading, sendRequest } = useHttpClient();
   const navigate = useNavigate();
-
-  const [error, setError] = useState("");
+  const {
+    error,
+    usernameError,
+    passwordError,
+    verifiedPasswordError,
+    isRegisterFormValid,
+    setError,
+  } = useRegisterValidations();
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Using FormData to retrieve user inputs
@@ -21,11 +28,8 @@ export default function Register() {
     const password = formData.get("password") as string;
     const verifiedPassword = formData.get("verified-password") as string;
 
-    if (verifiedPassword !== password) {
-      setError("passwords do not match");
+    if (!isRegisterFormValid(username, password, verifiedPassword)) {
       return;
-    } else {
-      setError("");
     }
 
     const handleRegister = async () => {
@@ -44,7 +48,7 @@ export default function Register() {
         localStorage.setItem("userName", username);
         navigate(`/auth?type=login`);
       } catch (err) {
-        setError("Resitration failed, please try again");
+        setError("Registration failed");
       }
     };
 
@@ -74,6 +78,8 @@ export default function Register() {
             name="username"
             fullWidth
             margin="normal"
+            error={usernameError !== ""}
+            helperText={usernameError}
             sx={{ backgroundColor: "#FFF" }}
           />
           <TextField
@@ -83,6 +89,8 @@ export default function Register() {
             name="password"
             fullWidth
             margin="normal"
+            error={passwordError !== ""}
+            helperText={passwordError}
             sx={{ backgroundColor: "#FFF" }}
           />
           <TextField
@@ -92,6 +100,8 @@ export default function Register() {
             name="verified-password"
             fullWidth
             margin="normal"
+            error={verifiedPasswordError !== ""}
+            helperText={verifiedPasswordError}
             sx={{ backgroundColor: "#FFF" }}
           />
           {error !== "" && (
