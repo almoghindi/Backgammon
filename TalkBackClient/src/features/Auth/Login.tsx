@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext } from "react";
+import React, { FormEvent, useContext, useState, useEffect } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -12,17 +12,26 @@ interface LoginResponse {
 }
 
 const LoginPage: React.FC = () => {
+  const [username, setUsername] = useState<string>("");
+  const [error, setError] = useState<string>("");
+
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
+
+  useEffect(() => {
+    const username: string | null = localStorage.getItem("userName");
+    if (username) {
+      setUsername(username);
+    }
+  }, []);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Using FormData to retrieve user inputs
     const formData = new FormData(event.currentTarget);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    console.log({ username, password });
     const handleLogin = async () => {
       try {
         const responseData = await sendRequest<LoginResponse>(
@@ -41,7 +50,7 @@ const LoginPage: React.FC = () => {
           responseData.username
         );
       } catch (err) {
-        console.log(err);
+        setError("Authentication Failed, please try again.");
       }
     };
 
@@ -69,7 +78,9 @@ const LoginPage: React.FC = () => {
             label="Username"
             variant="outlined"
             name="username"
+            value={username}
             fullWidth
+            required
             margin="normal"
             sx={{ backgroundColor: "#F5F5DC" }}
           />
@@ -78,6 +89,7 @@ const LoginPage: React.FC = () => {
             type="password"
             variant="outlined"
             name="password"
+            required
             fullWidth
             margin="normal"
             sx={{ backgroundColor: "#F5F5DC" }}
@@ -92,6 +104,7 @@ const LoginPage: React.FC = () => {
             Login
           </Button>
         </form>
+        {error && <Typography sx={{ color: "red" }}>{error}</Typography>}
       </Box>
     </>
   );
