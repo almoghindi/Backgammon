@@ -26,19 +26,25 @@ export function isValidPassword(password: string) {
 //   return username.length >= 3;
 // }
 
-// export function getRegisterValidation(
-//   username: string,
-//   password: string,
-//   verifiedPassword: string
-// ) {
-//   if(username)
-//   {
+export function getRegisterValidation(
+  username: string,
+  password: string,
+  verifiedPassword: string
+) {
+  if (username.length < 3) {
+    return "Username is too short, must be at least 3 chracters!";
+  }
 
-//   }
-//   if (verifiedPassword !== password) {
-//     throw new PasswordVerificationError("passwords do not match");
-//   }
-// }
+  if (isValidPassword(password)) {
+    return "Password should contain at least 8 chracters, Upper and lower cases and number.";
+  }
+
+  if (verifiedPassword !== password) {
+    return "Password should match !";
+  }
+
+  return "";
+}
 
 // export function getLoginValidation(username: string, password: string) {
 //   if (!isValidUsername(username)) {
