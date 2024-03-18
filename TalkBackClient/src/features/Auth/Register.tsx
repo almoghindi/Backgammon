@@ -4,6 +4,7 @@ import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useNavigate } from "react-router";
 import useAuthValidations from "../../hooks/useAuthValidations.tsx";
+import { AxiosError } from "axios";
 
 interface RegisterResponse {
   message: string;
@@ -48,7 +49,11 @@ export default function Register() {
         localStorage.setItem("userName", username);
         navigate(`/auth?type=login`);
       } catch (err) {
-        setError("Registration failed");
+        if (err instanceof AxiosError) {
+          setError(err.response?.data.message);
+        } else {
+          setError("Login failed");
+        }
       }
     };
 

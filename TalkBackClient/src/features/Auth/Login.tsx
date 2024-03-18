@@ -3,6 +3,8 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
+import { AxiosError } from "axios";
+import useAuthValidations from "../../hooks/useAuthValidations";
 
 interface LoginResponse {
   userId: string;
@@ -14,7 +16,6 @@ interface LoginResponse {
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
 
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
@@ -34,8 +35,17 @@ const LoginPage: React.FC = () => {
     setPassword(event.target.value);
   };
 
+  const { usernameError, passwordError, isLoginFormValid, error, setError } =
+    useAuthValidations();
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    // Using FormData to retrieve user inputs
+    const formData = new FormData(event.currentTarget);
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
+
+    if (!isLoginFormValid(username, password)) return;
 
     const handleLogin = async () => {
       try {
@@ -55,7 +65,11 @@ const LoginPage: React.FC = () => {
           responseData.username
         );
       } catch (err) {
-        setError("Authentication Failed, please try again.");
+        if (err instanceof AxiosError) {
+          setError(err.response?.data.message);
+        } else {
+          setError("Login failed");
+        }
       }
     };
 
@@ -87,6 +101,8 @@ const LoginPage: React.FC = () => {
             onChange={handleUsernameChange}
             fullWidth
             required
+            error={usernameError !== ""}
+            helperText={usernameError}
             margin="normal"
             sx={{ backgroundColor: "#FFF" }}
           />
@@ -99,9 +115,16 @@ const LoginPage: React.FC = () => {
             onChange={handlePasswordChange}
             required
             fullWidth
+            error={passwordError !== ""}
+            helperText={passwordError}
             margin="normal"
             sx={{ backgroundColor: "#FFF" }}
           />
+          {error !== "" && (
+            <Typography color={"#f44336"} sx={{ padding: 0 }}>
+              {error}
+            </Typography>
+          )}
           <div>
             <Button
               type="submit"
