@@ -3,7 +3,7 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useNavigate } from "react-router";
-import useRegisterValidations from "../../hooks/useRegisterValidations.tsx";
+import useAuthValidations from "../../hooks/useAuthValidations.tsx";
 
 interface RegisterResponse {
   message: string;
@@ -19,7 +19,7 @@ export default function Register() {
     verifiedPasswordError,
     isRegisterFormValid,
     setError,
-  } = useRegisterValidations();
+  } = useAuthValidations();
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Using FormData to retrieve user inputs

@@ -26,11 +26,18 @@ export function isValidUsername(username: string) {
   return username.length >= 3;
 }
 
-export function getClientValidation(
+export function getRegisterValidation(
   username: string,
   password: string,
   verifiedPassword: string
 ) {
+  getLoginValidation(username, password);
+  if (verifiedPassword !== password) {
+    throw new PasswordVerificationError("passwords do not match");
+  }
+}
+
+export function getLoginValidation(username: string, password: string) {
   if (!isValidUsername(username)) {
     throw new InvalidUsernameError("username must have at least 3 characters");
   }
@@ -38,8 +45,5 @@ export function getClientValidation(
     throw new InvalidPasswordError(
       "password must be minimum 8 characters, contain capital letters and numbers"
     );
-  }
-  if (verifiedPassword !== password) {
-    throw new PasswordVerificationError("passwords do not match");
   }
 }
