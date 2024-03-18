@@ -2,10 +2,10 @@ import Login from "../features/Auth/Login";
 import Register from "../features/Auth/Register";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Button } from "@mui/material";
+import { Button, Box } from "@mui/material";
 
 export default function AuthComponent() {
-  const [isLogin, setIsLogin] = useState<boolean>(false);
+  const [isLoginPage, setIsLogin] = useState<boolean>(false);
   //   const { type } = useParams(); //login || register
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -13,7 +13,7 @@ export default function AuthComponent() {
   const navigate = useNavigate();
 
   function toggle() {
-    const query = isLogin ? "register" : "login";
+    const query = isLoginPage ? "register" : "login";
     navigate(`/auth?type=${query}`);
   }
 
@@ -28,8 +28,23 @@ export default function AuthComponent() {
 
   return (
     <>
-      {isLogin ? <Login /> : <Register />}
-      <Button onClick={toggle}>{isLogin ? "register" : "login"}</Button>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "15px",
+          padding: "1.5em 1em",
+          height: "50vh",
+          backgroundColor: "#FFF",
+        }}
+      >
+        {isLoginPage ? <Login /> : <Register />}
+        <Button onClick={toggle} sx={{ m: 1 }}>
+          {isLoginPage ? "register" : "Already a user? Log in"}
+        </Button>
+      </Box>
     </>
   );
 }

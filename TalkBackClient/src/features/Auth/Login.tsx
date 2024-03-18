@@ -58,7 +58,7 @@ const LoginPage: React.FC = () => {
           alignItems: "center",
           justifyContent: "center",
           height: "50vh",
-          backgroundColor: "#F5F5DC",
+          backgroundColor: "#FFF",
         }}
       >
         <Typography variant="h4" sx={{ color: "#8B4513", mb: 2 }}>
@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
             name="username"
             fullWidth
             margin="normal"
-            sx={{ backgroundColor: "#F5F5DC" }}
+            sx={{ backgroundColor: "#FFF" }}
           />
           <TextField
             label="Password"
@@ -80,17 +80,19 @@ const LoginPage: React.FC = () => {
             name="password"
             fullWidth
             margin="normal"
-            sx={{ backgroundColor: "#F5F5DC" }}
+            sx={{ backgroundColor: "#FFF" }}
           />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 3 }}
-          >
-            Login
-          </Button>
+          <div>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 3, width: "25%" }}
+            >
+              Login
+            </Button>
+          </div>
         </form>
       </Box>
     </>
