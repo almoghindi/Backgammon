@@ -1,20 +1,14 @@
 import "./App.css";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { AuthContext } from "./context/auth-context";
 import AuthComponent from "./pages/Auth";
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from "react-router-dom";
-
-const router = createBrowserRouter([
-  {
-    path: "/auth",
-    element: <AuthComponent />,
-  },
-  { path: "*", element: <Navigate to="/auth" replace /> },
-]);
+import HomePage from "./pages/Home";
 
 function App() {
   const { token, login, logout, userId, username } = useAuth();
@@ -30,7 +24,19 @@ function App() {
           logout,
         }}
       >
-        <RouterProvider router={router} />
+        <Router>
+          <Routes>
+            {!token ? (
+              <>
+                <Route path="/auth" element={<AuthComponent />} />
+                <Route path="*" element={<Navigate to="/auth" />} />
+              </>
+            ) : (
+              <Route path="/" element={<HomePage />} />
+            )}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Router>
       </AuthContext.Provider>
     </>
   );
