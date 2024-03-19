@@ -3,7 +3,6 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
-
 interface LoginResponse {
   userId: string;
   token: string;
@@ -39,7 +38,7 @@ const LoginPage: React.FC = () => {
 
     const handleLogin = async () => {
       try {
-        const responseData = await sendRequest<LoginResponse>(
+        const loginResponseData = await sendRequest<LoginResponse>(
           `http://localhost:3001/api/users/login`,
           "POST",
           {
@@ -49,10 +48,10 @@ const LoginPage: React.FC = () => {
         );
 
         auth.login(
-          responseData.userId,
-          responseData.token,
-          responseData.refreshToken,
-          responseData.username
+          loginResponseData.userId,
+          loginResponseData.token,
+          loginResponseData.refreshToken,
+          loginResponseData.username
         );
       } catch (err) {
         setError("Authentication Failed, please try again.");

@@ -19,7 +19,24 @@ export const useAuth = () => {
   const [username, setUsername] = useState<string>("");
 
   const login = useCallback(
-    (uid: string, token: string, refreshToken: string, username: string) => {
+    async (
+      uid: string,
+      token: string,
+      refreshToken: string,
+      username: string
+    ) => {
+      await axios.post(
+        "http://localhost:3004/api/users/online",
+        {
+          userId: uid,
+          username,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setToken(token);
       setRefreshToken(refreshToken);
       setUserId(uid);
@@ -35,6 +52,10 @@ export const useAuth = () => {
         expiration: tokenExpirationDate.toISOString(),
         username: username,
       };
+
+      if (localStorage.getItem("userName")) {
+        localStorage.removeItem("userName");
+      }
       localStorage.setItem("userData", JSON.stringify(userData));
     },
     []
@@ -85,7 +106,8 @@ export const useAuth = () => {
           )
           .then((response) => {
             const data = response.data;
-            login(data.userId, data.token, data.refreshToken, data.username);
+            console.log(response.data);
+            login(userId, data.token, refreshToken, username);
           })
           .catch((error) => console.error("Error refreshing token:", error));
       }, remainingTime);

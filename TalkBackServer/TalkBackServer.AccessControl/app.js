@@ -37,7 +37,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI + "-AccessControl")
   .then(() => {
     app.listen(process.env.ACCESS_CONTROL_PORT || 5001);
   })

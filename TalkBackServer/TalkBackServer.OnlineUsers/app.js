@@ -1,25 +1,30 @@
 import express from "express";
 import cors from "cors";
-import fs from "fs";
 import mongoose from "mongoose";
-
+import http from "http";
 import dotenv from "dotenv";
 dotenv.config();
-import HttpError from "../models/HttpError.js";
 
-import UsersRoutes from "./routes/UsersRoutes.js";
+import OfflineUsersRoutes from "./routes/OfflineUsersRoutes.js";
+import OnlineUsersRoutes from "./routes/OnlineUsersRoutes.js";
+import initializeOnlineWebSocket from "./utils/web-socket.js";
 
 const app = express();
+const server = http.createServer(app); // Create HTTP server
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/api/users", UsersRoutes);
+app.use("/api/users/offline", OfflineUsersRoutes);
+app.use("/api/users/online", OnlineUsersRoutes);
+
+initializeOnlineWebSocket(server);
 
 app.use((req, res, next) => {
-  const error = new HttpError("Could not find this route.", 404);
-  throw error;
+  const error = new Error("Could not find this route.");
+  error.status = 404;
+  next(error);
 });
 
 app.use((error, req, res, next) => {
@@ -32,13 +37,13 @@ app.use((error, req, res, next) => {
   if (res.headerSent) {
     return next(error);
   }
-  res.status(error.code || 500);
+  res.status(error.status || 500);
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI + "-OnlineUsers")
   .then(() => {
-    app.listen(process.env.ACCESS_CONTROL_PORT || 5001);
+    server.listen(process.env.ONLINE_USERS_PORT || 5002);
   })
   .catch((err) => console.log(err));

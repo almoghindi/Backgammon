@@ -135,7 +135,7 @@ export const refresh = async (req, res, next) => {
     return next(new HttpError("Invalid refresh token", 401));
   }
 
-  const accessToken = generateAccessToken(payload.userId);
+  const accessToken = generateToken(payload.userId);
   res.status(200).json({ accessToken });
 };
 
