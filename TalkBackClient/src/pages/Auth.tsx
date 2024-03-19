@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router";
 import { Button, Box } from "@mui/material";
 
 export default function AuthComponent() {
-  const [isLoginPage, setIsLogin] = useState<boolean>(false);
+  const [isLoginPage, setIsLogin] = useState<boolean>(true);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const type = queryParams.get("type");
@@ -21,7 +21,7 @@ export default function AuthComponent() {
       setIsLogin(type === "login");
       return;
     }
-    setIsLogin(false);
+    setIsLogin(true);
   }, [type]);
 
   return (
@@ -40,7 +40,9 @@ export default function AuthComponent() {
       >
         {isLoginPage ? <Login /> : <Register />}
         <Button onClick={toggle} sx={{ m: 1 }}>
-          {isLoginPage ? "register" : "Already a user? Log in"}
+          {isLoginPage
+            ? "Dont have a user ? Register now !"
+            : "Already a user? Log in"}
         </Button>
       </Box>
     </>
