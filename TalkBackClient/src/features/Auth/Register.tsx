@@ -5,6 +5,7 @@ import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { getRegisterValidation } from "../../utils/validations";
 // import useAuthValidations from "../../hooks/useAuthValidations.tsx";
+import { AxiosError } from "axios";
 
 interface RegisterResponse {
   message: string;
