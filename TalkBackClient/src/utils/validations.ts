@@ -23,7 +23,8 @@ export function isValidPassword(password: string) {
 }
 
 export function isValidUsername(username: string) {
-  return username.length >= 3;
+  const regex = /^[a-zA-Z0-9_]{3,20}$/;
+  return regex.test(username);
 }
 
 export function getRegisterValidation(
@@ -39,7 +40,7 @@ export function getRegisterValidation(
 
 export function getLoginValidation(username: string, password: string) {
   if (!isValidUsername(username)) {
-    throw new InvalidUsernameError("username must have at least 3 characters");
+    throw new InvalidUsernameError("username is invalid");
   }
   if (!isValidPassword(password)) {
     throw new InvalidPasswordError(
