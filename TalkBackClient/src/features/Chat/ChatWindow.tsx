@@ -18,25 +18,29 @@ class MessageModel {
 export default function ChatWindow() {
   const [messages, setMessages] = useState<MessageModel[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { token, username } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const navigate = useNavigate();
 
   const addMessage = useCallback((sender: string, content: string) => {
     const newMessage = new MessageModel(sender, content);
+    console.log(newMessage);
     setMessages((prev) => [...prev, newMessage]);
   }, []);
 
   useEffect(() => {
     function onConnect() {
-      socket.emit("authorize-token", token);
+      console.log("client token" + auth.token);
+      socket.emit("authorize-token", auth.token);
     }
     function onAuthorizationResult(resultobject: { authorization: boolean }) {
       if (!resultobject.authorization) {
         alert("User unauthorized");
         navigate("/");
+        return;
       }
+      console.log("authorized");
       setIsLoading(false);
-      addMessage("admin", `${username} connected`);
+      addMessage("admin", `${auth.username} connected`);
     }
 
     socket.on("user-connected", onConnect);

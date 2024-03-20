@@ -23,6 +23,8 @@ export const io = new Server(socketServer, {
 });
 
 io.on("connection", (socket) => {
+  console.log("connection");
+  socket.emit("user-connected");
   socket.on("authorize-token", (token) => {
     console.log(token);
     socketAuth(token, (err) => {

@@ -9,6 +9,7 @@ import { useAuth } from "./hooks/useAuth";
 import { AuthContext } from "./context/auth-context";
 import AuthComponent from "./pages/Auth";
 import HomePage from "./pages/Home";
+import ChatWindow from "./features/Chat/ChatWindow";
 
 function App() {
   const { token, login, logout, userId, username } = useAuth();
@@ -32,7 +33,10 @@ function App() {
                 <Route path="*" element={<Navigate to="/auth" />} />
               </>
             ) : (
-              <Route path="/" element={<HomePage />} />
+              <>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/chatdev" element={<ChatWindow />} />
+              </>
             )}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

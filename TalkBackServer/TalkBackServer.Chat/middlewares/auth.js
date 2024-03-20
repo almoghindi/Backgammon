@@ -18,6 +18,8 @@ export const auth = (req, res, next) => {
 
 export const socketAuth = (token, next) => {
   try {
+    console.log("token  " + token);
+    console.log(process.env.JWT_SECRET_KEY);
     if (!token) next(new Error("unauthorized"));
     const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
     console.log("payload " + payload);
