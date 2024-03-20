@@ -15,3 +15,15 @@ export const auth = (req, res, next) => {
     return res.status(401).json({ error: "EXP" });
   }
 };
+
+export const socketAuth = (token, next) => {
+  try {
+    if (!token) next(new Error("unauthorized"));
+    const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    console.log("payload " + payload);
+    if (!payload) next(new Error("unauthorized"));
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
