@@ -1,5 +1,5 @@
 import redisClient from "../utils/redis.js";
-import { deleteOfflineUser } from "./OfflineUsersController.js";
+import { deleteOfflineUser } from "./offline-users.controller.js";
 export const getOnlineUsers = async (req, res, next) => {
   try {
     const onlineUsers = await redisClient.hGetAll("online-users");
@@ -33,7 +33,6 @@ export const addOnlineUser = async (req, res, next) => {
 
 export const deleteOnlineUser = async (userId) => {
   try {
-    console.log(userId);
     await redisClient.hDel("online-users", userId);
     return true;
   } catch (error) {

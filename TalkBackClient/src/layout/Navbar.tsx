@@ -1,12 +1,19 @@
-import React, { useContext } from "react";
+import React, { useState, useContext } from "react";
 import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import { useHttpClient } from "../hooks/useHttp";
 import { AuthContext } from "../context/auth-context";
 import logo from "../assets/logo.png";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { socket } from "../utils/socketConnection";
+import Snackbar from "../components/Snackbar";
 
-const NavBar: React.FC = () => {
+interface NavbarProps {
+  onOfflineNotification: (message: string) => void;
+}
+
+const NavBar: React.FC<NavbarProps> = ({ onOfflineNotification }) => {
+  const [open, setOpen] = useState(false);
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
   const handleLogout = () => {
@@ -15,6 +22,19 @@ const NavBar: React.FC = () => {
       username: auth.username,
     });
     localStorage.setItem("userName", auth.username);
+    socket.on("userLeft", (message: string) => {
+      setOpen(true);
+      <Snackbar
+        snackbarOpen={open}
+        setSnackbarOpen={setOpen}
+        snackbarMessage={message}
+        variant="error"
+      />;
+
+      onOfflineNotification(message);
+    });
+
+    socket.disconnect();
     auth.logout();
   };
   return (

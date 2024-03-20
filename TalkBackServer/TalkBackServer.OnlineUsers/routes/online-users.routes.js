@@ -3,7 +3,7 @@ import { auth } from "../middlewares/auth.js";
 import {
   addOnlineUser,
   getOnlineUsers,
-} from "../controllers/OnlineUsersController.js";
+} from "../controllers/online-users.controller.js";
 
 const router = express.Router();
 

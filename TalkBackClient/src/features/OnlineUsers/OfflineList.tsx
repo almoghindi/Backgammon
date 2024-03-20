@@ -15,7 +15,11 @@ interface OfflineUser {
   username: string;
 }
 
-const OnlineUsersList: React.FC = () => {
+interface OfflineUsersListProps {
+  notification: string;
+}
+
+const OnlineUsersList: React.FC<OfflineUsersListProps> = ({ notification }) => {
   const [offlineUsers, setOfflineUsers] = useState<OfflineUser[]>([]);
   const { isLoading, sendRequest } = useHttpClient();
   useEffect(() => {
@@ -31,7 +35,7 @@ const OnlineUsersList: React.FC = () => {
       }
     };
     fetchOfflineUsers();
-  }, []);
+  }, [notification]);
   return (
     <>
       {isLoading && <LoadingSpinner />}

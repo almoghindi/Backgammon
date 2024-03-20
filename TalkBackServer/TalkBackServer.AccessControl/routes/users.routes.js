@@ -7,7 +7,7 @@ import {
   logout,
   // getAllUsers,
   // getAllUsersByIds,
-} from "../controllers/UsersController.js";
+} from "../controllers/users.controller.js";
 const router = express.Router();
 
 router.post(

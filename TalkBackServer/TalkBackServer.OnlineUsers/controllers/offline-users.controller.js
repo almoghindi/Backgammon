@@ -1,5 +1,5 @@
-import OfflineUser from "../models/OfflineUser.js";
-import { deleteOnlineUser } from "./OnlineUsersController.js";
+import OfflineUser from "../models/offline-user.js";
+import { deleteOnlineUser } from "./online-users.controller.js";
 export const getOfflineUsers = async (req, res, next) => {
   let offlineUsers;
   try {
@@ -14,10 +14,20 @@ export const getOfflineUsers = async (req, res, next) => {
 };
 
 export const postOfflineUser = async (req, res, next) => {
-  console.log(req.body);
+  const { userId, username } = req.body;
+
+  if (!userId || !username) {
+    return res.status(400).json({ error: "Missing userId or username" });
+  }
+
+  const exists = await OfflineUser.findOne({ userId: userId });
+  if (exists) {
+    return res.status(409).json({ error: "User already exists" });
+  }
+
   const offlineUser = new OfflineUser({
-    userId: req.body.userId,
-    username: req.body.username,
+    userId,
+    username,
   });
   try {
     await deleteOnlineUser(req.body.userId);

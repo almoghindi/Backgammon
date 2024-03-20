@@ -5,8 +5,8 @@ import http from "http";
 import dotenv from "dotenv";
 dotenv.config();
 
-import OfflineUsersRoutes from "./routes/OfflineUsersRoutes.js";
-import OnlineUsersRoutes from "./routes/OnlineUsersRoutes.js";
+import OfflineUsersRoutes from "./routes/offline-users.routes.js";
+import OnlineUsersRoutes from "./routes/online-users.routes.js";
 import initializeOnlineWebSocket from "./utils/web-socket.js";
 
 const app = express();

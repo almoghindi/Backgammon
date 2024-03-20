@@ -3,7 +3,7 @@ import { auth } from "../middlewares/auth.js";
 import {
   getOfflineUsers,
   postOfflineUser,
-} from "../controllers/OfflineUsersController.js";
+} from "../controllers/offline-users.controller.js";
 
 const router = express.Router();
 

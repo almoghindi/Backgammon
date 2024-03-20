@@ -5,9 +5,9 @@ import mongoose from "mongoose";
 
 import dotenv from "dotenv";
 dotenv.config();
-import HttpError from "./models/HttpError.js";
+import HttpError from "./models/http-error.js";
 
-import UsersRoutes from "./routes/UsersRoutes.js";
+import UsersRoutes from "./routes/users.routes.js";
 
 const app = express();
 

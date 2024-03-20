@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import HttpError from "../models/HttpError.js";
+import HttpError from "../models/http-error.js";
 
 export const generateToken = (userId) => {
   let token;
@@ -25,10 +25,10 @@ export const generateRefreshToken = (userId) => {
   return token;
 };
 
-export const verifyToken = (token) => {
+export const verifyToken = (token, secret) => {
   let payload;
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    payload = jwt.verify(token, secret);
   } catch (err) {
     return false;
   }

@@ -1,8 +1,8 @@
-import Login from "../features/Auth/Login";
-import Register from "../features/Auth/Register";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { Button, Box } from "@mui/material";
+import Login from "../features/Auth/Login";
+import Register from "../features/Auth/Register";
 
 export default function AuthComponent() {
   const [isLoginPage, setIsLogin] = useState<boolean>(true);

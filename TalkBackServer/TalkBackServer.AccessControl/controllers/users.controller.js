@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
-import HttpError from "../models/HttpError.js";
-import User from "../models/User.js";
-import Token from "../models/Token.js";
+import HttpError from "../models/http-error.js";
+import User from "../models/user.js";
+import Token from "../models/token.js";
 
 import {
   generateToken,
@@ -85,40 +85,7 @@ export const login = async (req, res, next) => {
   }
   const refreshToken = generateRefreshToken(existingUser._id);
   const token = generateToken(existingUser._id);
-  // let existingToken;
-  // try {
-  //   existingToken = await Token.findOne({ userId: existingUser._id });
-  // } catch (err) {
-  //   const error = new HttpError("Login failed", 500);
-  //   return next(error);
-  // }
 
-  // let token;
-  // if (existingToken && verifyToken(existingToken.token)) {
-  //   token = existingToken.token;
-  // }
-  // if (existingToken && !verifyToken(existingToken.token)) {
-  //   try {
-  //     await Token.deleteOne({ userId: existingUser._id });
-  //   } catch (err) {
-  //     const error = new HttpError("Token deleting failed", 500);
-  //     return next(error);
-  //   }
-  // }
-
-  // if (!existingToken || !verifyToken(existingToken.token)) {
-  //   token = generateToken(existingUser._id);
-  //   try {
-  //     const createdToken = new Token({
-  //       userId: existingUser._id,
-  //       token: token,
-  //     });
-  //     await createdToken.save();
-  //   } catch (err) {
-  //     const error = new HttpError("Token saving failed", 500);
-  //     return next(error);
-  //   }
-  // }
   res.status(200).json({
     userId: existingUser._id,
     username: existingUser.username,
@@ -130,7 +97,8 @@ export const login = async (req, res, next) => {
 export const refresh = async (req, res, next) => {
   const { refreshToken } = req.body;
 
-  const payload = verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET_KEY);
+  const payload = verifyToken(refreshToken, process.env.JWT_REFRESH_TOKEN_KEY);
+
   if (!payload) {
     return next(new HttpError("Invalid refresh token", 401));
   }
@@ -149,32 +117,3 @@ export const logout = async (req, res, next) => {
   }
   res.status(200).json({ message: "Logout successful" });
 };
-
-// export const getAllUsers = async (req, res, next) => {
-//   let users;
-//   try {
-//     users = await User.find();
-//   } catch (err) {
-//     const error = new HttpError("Fetching users failed", 500);
-//     return next(error);
-//   }
-//   res
-//     .status(200)
-//     .json({ users: users.map((user) => user.toObject({ getters: true })) });
-// };
-
-// export const getAllUsersByIds = (req, res, next) => {
-//   const { userIds } = req.body;
-//   console.log(userIds);
-//   let users;
-//   try {
-//     users = User.find({ _id: { $in: userIds } });
-//   } catch (err) {
-//     const error = new HttpError("Fetching users failed", 500);
-//     return next(error);
-//   }
-//   console.log(users);
-//   res
-//     .status(200)
-//     .json({ users: users.map((user) => user.toObject({ getters: true })) });
-// };

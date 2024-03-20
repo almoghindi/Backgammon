@@ -3,6 +3,8 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
+import { socket } from "../../utils/socketConnection";
+import axios from "axios";
 interface LoginResponse {
   userId: string;
   token: string;
@@ -53,6 +55,20 @@ const LoginPage: React.FC = () => {
           loginResponseData.refreshToken,
           loginResponseData.username
         );
+
+        await axios.post(
+          "http://localhost:3004/api/users/online",
+          {
+            userId: loginResponseData.userId,
+            username: loginResponseData.username,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${loginResponseData.token}`,
+            },
+          }
+        );
+        socket.emit("userLoggedIn", username);
       } catch (err) {
         setError("Authentication Failed, please try again.");
       }

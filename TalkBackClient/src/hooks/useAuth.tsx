@@ -25,25 +25,11 @@ export const useAuth = () => {
       refreshToken: string,
       username: string
     ) => {
-      await axios.post(
-        "http://localhost:3004/api/users/online",
-        {
-          userId: uid,
-          username,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
       setToken(token);
       setRefreshToken(refreshToken);
       setUserId(uid);
       setUsername(username);
-      const tokenExpirationDate = new Date(
-        new Date().getTime() + 1000 * 60 * 60 * 24
-      );
+      const tokenExpirationDate = new Date(new Date().getTime() + 1000 * 15);
       setTokenExpirationDate(tokenExpirationDate);
       const userData = {
         userId: uid,
@@ -106,8 +92,7 @@ export const useAuth = () => {
           )
           .then((response) => {
             const data = response.data;
-            console.log(response.data);
-            login(userId, data.token, refreshToken, username);
+            login(userId, data.accessToken, refreshToken, username);
           })
           .catch((error) => console.error("Error refreshing token:", error));
       }, remainingTime);
