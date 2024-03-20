@@ -29,7 +29,9 @@ export const useAuth = () => {
       setRefreshToken(refreshToken);
       setUserId(uid);
       setUsername(username);
-      const tokenExpirationDate = new Date(new Date().getTime() + 1000 * 15);
+      const tokenExpirationDate = new Date(
+        new Date().getTime() + 1000 * 60 * 15
+      );
       setTokenExpirationDate(tokenExpirationDate);
       const userData = {
         userId: uid,

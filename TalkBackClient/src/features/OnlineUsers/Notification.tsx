@@ -13,15 +13,14 @@ const OnlineUserNotification: React.FC<NotificationProps> = ({
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
-    socket.on("userLoggedIn", (message: string) => {
-      setSnackbarMessage(message);
-      setSnackbarOpen(true);
-      console.log(message);
-    });
-
-    return () => {
-      socket.off("userLoggedIn");
-    };
+    // socket.on("user-joined", (message: string) => {
+    //   setSnackbarMessage(message);
+    //   setSnackbarOpen(true);
+    //   console.log(message);
+    // });
+    // return () => {
+    //   socket.off("user-joined");
+    // };
   }, []);
 
   useEffect(() => {

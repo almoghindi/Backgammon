@@ -22,19 +22,19 @@ const NavBar: React.FC<NavbarProps> = ({ onOfflineNotification }) => {
       username: auth.username,
     });
     localStorage.setItem("userName", auth.username);
-    socket.on("userLeft", (message: string) => {
-      setOpen(true);
-      <Snackbar
-        snackbarOpen={open}
-        setSnackbarOpen={setOpen}
-        snackbarMessage={message}
-        variant="error"
-      />;
+    // socket.on("user-left", (message: string) => {
+    //   setOpen(true);
+    //   <Snackbar
+    //     snackbarOpen={open}
+    //     setSnackbarOpen={setOpen}
+    //     snackbarMessage={message}
+    //     variant="error"
+    //   />;
 
-      onOfflineNotification(message);
-    });
+    //   onOfflineNotification(message);
+    // });
 
-    socket.disconnect();
+    // socket.disconnect();
     auth.logout();
   };
   return (
