@@ -49,7 +49,7 @@ export async function getChat(sender, receiver) {
       chat = await Chat.findOne({ chatId: revId });
     }
     if (!chat) {
-      chat = new Chat({ chatId: id });
+      chat = new Chat({ chatId: id, messages: [] });
     }
     return chat;
   } catch (err) {

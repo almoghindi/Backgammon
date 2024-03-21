@@ -3,15 +3,17 @@ import MessageModel from "../models/MessageModel";
 import "./ChatMessagesBlock.css";
 import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect } from "react";
+import LoadingSpinner from "../../LoadingSpinner";
 
 interface ChatMessages {
   messages: MessageModel[];
   username: string;
+  isLoading: boolean;
 }
 
 export default function ChatMessagesBlock(props: ChatMessages) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const { messages, username } = props;
+  const { messages, username, isLoading } = props;
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -25,6 +27,7 @@ export default function ChatMessagesBlock(props: ChatMessages) {
   return (
     <>
       <div className="messages-container">
+        {isLoading && <LoadingSpinner />}
         {messages &&
           messages.map((m) => (
             <div

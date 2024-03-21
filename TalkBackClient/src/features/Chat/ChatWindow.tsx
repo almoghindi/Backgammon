@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { socket } from "../../socket/chatSocket.ts";
 import { AuthContext } from "../../context/auth-context";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
@@ -28,8 +28,9 @@ interface Props {
 export default function ChatWindow(props: Props) {
   const { chatBuddyUsername, onCloseWindow } = props;
   const [messages, setMessages] = useState<MessageModel[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [chatId, setChatId] = useState("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(true);
   const auth = useContext(AuthContext);
   const { username, token } = auth;
   const { sendRequest } = useHttpClient();
@@ -51,54 +52,59 @@ export default function ChatWindow(props: Props) {
     const message = messageJson;
     addMessage(message);
   }
-  async function sendNewMessage(newMessage: MessageModel) {
-    ///new-message
-    try {
-      const response = await sendRequest(
-        `http://localhost:3002/api/chat/new-message`,
-        "POST",
-        { message: newMessage, to: chatBuddyUsername },
-        { authorization: `Bearer ${token}` }
-      );
-      return response;
-    } catch (err) {
-      console.log(err);
-    }
-  }
-  async function askToEnterChat(data: UserData) {
-    ///new-message
-    try {
-      const response = await sendRequest(
-        `http://localhost:3002/api/chat/enter-chat`,
-        "POST",
-        { data, to: chatBuddyUsername },
-        { authorization: `Bearer ${token}` }
-      );
-      if (!response) throw new Error("enter chat failed");
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  useEffect(() => {
-    async function fetchMessages() {
+  const sendNewMessage = useCallback(
+    async (newMessage: MessageModel) => {
       try {
-        const response = await sendRequest<ChatMessagesResponse>(
-          `http://localhost:3002/api/chat/fetchMessages`,
+        const response = await sendRequest(
+          `http://localhost:3002/api/chat/new-message`,
           "POST",
-          { sender: username, reciever: chatBuddyUsername },
+          { message: newMessage, to: chatBuddyUsername },
           { authorization: `Bearer ${token}` }
         );
-        if (!response) throw new Error("fetch failed");
-        setChatId(response.chatId);
-        setMessages(response.messages);
+        return response;
       } catch (err) {
         console.log(err);
       }
-    }
+    },
+    [token, chatBuddyUsername]
+  );
 
+  const askToEnterChat = useCallback(
+    async (data: UserData) => {
+      try {
+        const response = await sendRequest(
+          `http://localhost:3002/api/chat/enter-chat`,
+          "POST",
+          { data, to: chatBuddyUsername },
+          { authorization: `Bearer ${token}` }
+        );
+        if (!response) throw new Error("enter chat failed");
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [token, chatBuddyUsername]
+  );
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const response = await sendRequest<ChatMessagesResponse>(
+        `http://localhost:3002/api/chat/fetchMessages`,
+        "POST",
+        { sender: username, reciever: chatBuddyUsername },
+        { authorization: `Bearer ${token}` }
+      );
+      if (!response) throw new Error("fetch failed");
+      setChatId(response.chatId);
+      setMessages(response.messages);
+      setIsLoadingMessages(false);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [token, username, chatBuddyUsername]);
+
+  useEffect(() => {
     function onConnect(sender: string) {
-      setIsLoading(false);
       const name = username === sender ? "You" : sender;
       const newMessage = new MessageModel(
         "admin",
@@ -108,6 +114,7 @@ export default function ChatWindow(props: Props) {
       fetchMessages();
       addMessage(newMessage);
     }
+
     function onMount() {
       if (!username) return;
       const data = {
@@ -117,18 +124,20 @@ export default function ChatWindow(props: Props) {
       askToEnterChat(data);
       onConnect(data.username);
     }
+
     onMount();
     socket.on("user-joined", onConnect);
     socket.on("new-message", handleIncomingMessage);
     return () => {
       socket.off("user-joined", onConnect);
       socket.off("new-message", handleIncomingMessage);
+      socket.disconnect();
     };
   }, [username]);
 
   return (
     <>
-      {isLoading && <LoadingSpinner />}
+      {isLoadingMessages && <LoadingSpinner />}
       <div className="chat-window-header">
         <Typography>Chat with: {chatBuddyUsername}</Typography>
         <button
@@ -139,7 +148,11 @@ export default function ChatWindow(props: Props) {
         </button>
       </div>
       <Divider />
-      <ChatMessagesBlock messages={messages} username={username} />
+      <ChatMessagesBlock
+        messages={messages}
+        isLoading={isLoadingMessages}
+        username={username}
+      />
       <ChatInput
         addMessage={(content, timestamp) =>
           handleUserMesssage(username, content, timestamp)
