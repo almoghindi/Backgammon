@@ -30,10 +30,6 @@ export function emitEventToUser(eventName, message, to) {
   io.to(usernameToSocketIdMap[to]).emit(eventName, message);
 }
 
-function saveMessage(message, sender){
-  
-}
-
 io.on("connection", (socket) => {});
 
 app.use("/api/chat", ChatRoutes);

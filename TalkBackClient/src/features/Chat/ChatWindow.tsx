@@ -15,6 +15,11 @@ interface UserData {
   socketId: string;
 }
 
+interface ChatMessagesResponse {
+  chatId: string;
+  messages: MessageModel[];
+}
+
 interface Props {
   chatBuddyUsername: string;
   onCloseWindow: (value: string) => void;
@@ -23,6 +28,7 @@ interface Props {
 export default function ChatWindow(props: Props) {
   const { chatBuddyUsername, onCloseWindow } = props;
   const [messages, setMessages] = useState<MessageModel[]>([]);
+  const [chatId, setChatId] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const auth = useContext(AuthContext);
   const { username, token } = auth;
@@ -36,11 +42,7 @@ export default function ChatWindow(props: Props) {
     content: string,
     timestamp: Date
   ) {
-    const newMessage = new MessageModel(
-      sender,
-      content,
-      timestamp.toLocaleTimeString()
-    );
+    const newMessage = new MessageModel(sender, content, timestamp);
     addMessage(newMessage);
     sendNewMessage(newMessage);
     // socket.emit("send-message", { message: newMessage, to: chatBuddyUsername });
@@ -79,15 +81,31 @@ export default function ChatWindow(props: Props) {
   }
 
   useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const response = await sendRequest<ChatMessagesResponse>(
+          `http://localhost:3002/api/chat/fetchMessages`,
+          "POST",
+          { sender: username, reciever: chatBuddyUsername },
+          { authorization: `Bearer ${token}` }
+        );
+        if (!response) throw new Error("fetch failed");
+        setChatId(response.chatId);
+        setMessages(response.messages);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
     function onConnect(sender: string) {
       setIsLoading(false);
-      console.log(sender);
       const name = username === sender ? "You" : sender;
       const newMessage = new MessageModel(
         "admin",
         `${name} connected`,
-        new Date().toLocaleTimeString()
+        new Date()
       );
+      fetchMessages();
       addMessage(newMessage);
     }
     function onMount() {
