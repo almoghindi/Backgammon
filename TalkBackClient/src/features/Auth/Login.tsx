@@ -55,6 +55,14 @@ const LoginPage: React.FC = () => {
           loginResponseData.refreshToken,
           loginResponseData.username
         );
+        // await sendRequest<LoginResponse>(
+        //   `http://localhost:3004/api/users/online`,
+        //   "POST",
+        //   {
+        //     userId: loginResponseData.userId,
+        //     username: loginResponseData.username,
+        //   }
+        // );
 
         await axios.post(
           "http://localhost:3004/api/users/online",
@@ -68,7 +76,8 @@ const LoginPage: React.FC = () => {
             },
           }
         );
-        socket.emit("userLoggedIn", username);
+        console.log(loginResponseData);
+        socket.emit("user-logged-in", "hi");
       } catch (err) {
         setError("Authentication Failed, please try again.");
       }

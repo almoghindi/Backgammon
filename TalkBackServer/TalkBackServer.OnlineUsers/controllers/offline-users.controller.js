@@ -2,6 +2,7 @@ import OfflineUser from "../models/offline-user.js";
 import { deleteOnlineUser } from "./online-users.controller.js";
 export const getOfflineUsers = async (req, res, next) => {
   let offlineUsers;
+
   try {
     offlineUsers = await OfflineUser.find();
   } catch (err) {

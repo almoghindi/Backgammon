@@ -96,9 +96,7 @@ export const login = async (req, res, next) => {
 
 export const refresh = async (req, res, next) => {
   const { refreshToken } = req.body;
-
   const payload = verifyToken(refreshToken, process.env.JWT_REFRESH_TOKEN_KEY);
-
   if (!payload) {
     return next(new HttpError("Invalid refresh token", 401));
   }

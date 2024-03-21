@@ -29,7 +29,9 @@ export const useAuth = () => {
       setRefreshToken(refreshToken);
       setUserId(uid);
       setUsername(username);
-      const tokenExpirationDate = new Date(new Date().getTime() + 1000 * 15);
+      const tokenExpirationDate = new Date(
+        new Date().getTime() + 1000 * 60 * 15
+      );
       setTokenExpirationDate(tokenExpirationDate);
       const userData = {
         userId: uid,
@@ -56,19 +58,37 @@ export const useAuth = () => {
     localStorage.removeItem("userData");
   }, []);
 
+  const refresh = async (refreshToken: string): Promise<string> => {
+    try {
+      console.log(refreshToken);
+      const response = await axios.post(
+        "http://localhost:3001/api/users/refresh",
+        { refreshToken },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      return response.data.accessToken;
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const storedDataJSON = localStorage.getItem("userData");
 
     if (storedDataJSON) {
       const storedData: UserAuthData = JSON.parse(storedDataJSON);
       if (storedData && storedData.token && storedData.userId) {
-        login(
-          storedData.userId,
-          storedData.token,
-          storedData.refreshToken,
-          // new Date(parsedData.expiration),
-          storedData.username
-        );
+        const fetchData = async () => {
+          const accessToken = await refresh(storedData.refreshToken);
+          login(
+            storedData.userId,
+            accessToken,
+            storedData.refreshToken,
+            storedData.username
+          );
+        };
+        fetchData();
       }
     }
   }, [login]);
@@ -78,23 +98,7 @@ export const useAuth = () => {
       const remainingTime =
         tokenExpirationDate.getTime() - new Date().getTime();
       logoutTimer = setTimeout(() => {
-        axios
-          .post(
-            "http://localhost:3001/api/users/refresh",
-            {
-              refreshToken,
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          )
-          .then((response) => {
-            const data = response.data;
-            login(userId, data.accessToken, refreshToken, username);
-          })
-          .catch((error) => console.error("Error refreshing token:", error));
+        refresh(refreshToken);
       }, remainingTime);
     } else {
       clearTimeout(logoutTimer);
