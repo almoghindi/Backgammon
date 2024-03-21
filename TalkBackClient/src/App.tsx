@@ -39,6 +39,7 @@ function App() {
               </>
             )}
             <Route path="*" element={<Navigate to="/" />} />
+            <Route path="/chatdev" element={<ChatWindow />} />
           </Routes>
         </Router>
       </AuthContext.Provider>

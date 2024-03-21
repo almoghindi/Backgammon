@@ -3,6 +3,7 @@ import { socket } from "../../socket/chatSocket.ts";
 import { AuthContext } from "../../context/auth-context";
 import { useNavigate } from "react-router";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
+import { v4 as uuidv4 } from "uuid";
 
 class MessageModel {
   constructor(sender: string, content: string) {
@@ -29,32 +30,20 @@ export default function ChatWindow() {
 
   useEffect(() => {
     function onConnect() {
-      console.log("client token" + auth.token);
-      socket.emit("authorize-token", auth.token);
-    }
-    function onAuthorizationResult(resultobject: { authorization: boolean }) {
-      if (!resultobject.authorization) {
-        alert("User unauthorized");
-        navigate("/");
-        return;
-      }
-      console.log("authorized");
       setIsLoading(false);
       addMessage("admin", `${auth.username} connected`);
     }
 
     socket.on("user-connected", onConnect);
-    socket.on("authorization-result", onAuthorizationResult);
     return () => {
       socket.off("user-connected", onConnect);
-      socket.on("authorization-result", onAuthorizationResult);
     };
   }, []);
 
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      {messages && messages.map((m) => <p>{m.content}</p>)}
+      {messages && messages.map((m) => <p key={uuidv4()}>{m.content}</p>)}
     </>
   );
 }

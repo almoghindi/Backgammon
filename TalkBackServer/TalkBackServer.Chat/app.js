@@ -25,22 +25,6 @@ export const io = new Server(socketServer, {
 io.on("connection", (socket) => {
   console.log("connection");
   socket.emit("user-connected");
-  socket.on("authorize-token", (token) => {
-    console.log(token);
-    socketAuth(token, (err) => {
-      if (err) {
-        console.log(err);
-        socket.emit("authorization-result", {
-          authorized: false,
-          message: err,
-        });
-        socket.disconnect(true);
-      } else {
-        console.log("hi");
-        socket.emit("authorization-result", { authorized: true });
-      }
-    });
-  });
 });
 
 app.use("/api/chat", ChatRoutes);
