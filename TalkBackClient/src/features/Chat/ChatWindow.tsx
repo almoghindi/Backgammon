@@ -2,11 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { socket } from "../../socket/chatSocket.ts";
 import { AuthContext } from "../../context/auth-context";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
-import { Typography } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import ChatInput from "../../components/Chat/ChatInput/ChatInput.tsx";
 import MessageModel from "../../components/Chat/models/MessageModel.ts";
 import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
 import { useHttpClient } from "../../hooks/useHttp.tsx";
+import CloseIcon from "@mui/icons-material/Close";
+import "./ChatWindow.css";
 
 interface UserData {
   username: string;
@@ -15,10 +17,11 @@ interface UserData {
 
 interface Props {
   chatBuddyUsername: string;
+  onCloseWindow: (value: string) => void;
 }
 
 export default function ChatWindow(props: Props) {
-  const { chatBuddyUsername } = props;
+  const { chatBuddyUsername, onCloseWindow } = props;
   const [messages, setMessages] = useState<MessageModel[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const auth = useContext(AuthContext);
@@ -108,7 +111,16 @@ export default function ChatWindow(props: Props) {
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      <Typography textAlign={"center"}>{chatBuddyUsername}</Typography>
+      <div className="chat-window-header">
+        <Typography>Chat with: {chatBuddyUsername}</Typography>
+        <button
+          className="close-btn"
+          onClick={() => onCloseWindow(chatBuddyUsername)}
+        >
+          <CloseIcon />
+        </button>
+      </div>
+      <Divider />
       <ChatMessagesBlock messages={messages} username={username} />
       <ChatInput
         addMessage={(content, timestamp) =>

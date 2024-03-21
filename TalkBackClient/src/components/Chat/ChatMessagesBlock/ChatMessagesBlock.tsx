@@ -2,6 +2,7 @@ import ChatMessage from "../ChatMessage/ChatMessage";
 import MessageModel from "../models/MessageModel";
 import "./ChatMessagesBlock.css";
 import { v4 as uuidv4 } from "uuid";
+import { useRef, useEffect } from "react";
 
 interface ChatMessages {
   messages: MessageModel[];
@@ -9,8 +10,18 @@ interface ChatMessages {
 }
 
 export default function ChatMessagesBlock(props: ChatMessages) {
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const { messages, username } = props;
 
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
   return (
     <>
       <div className="messages-container">
@@ -27,6 +38,7 @@ export default function ChatMessagesBlock(props: ChatMessages) {
               ></ChatMessage>
             </div>
           ))}
+        <div ref={messagesEndRef} />
       </div>
     </>
   );

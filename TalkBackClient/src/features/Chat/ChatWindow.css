@@ -1,0 +1,15 @@
+.chat-window-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5em;
+  padding-top: 0.3em;
+}
+
+.close-btn {
+  display: flex;
+  padding: 0;
+  background-color: transparent;
+  margin-right: 1em;
+}

@@ -1,5 +1,10 @@
 .sendmessage-form {
   display: flex;
+  width: 100%;
+}
+
+.message-input {
+  width: 100%;
 }
 
 .send-btn {

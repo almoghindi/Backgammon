@@ -25,6 +25,7 @@ export default function ChatInput(props: ChatInputProps) {
         <input
           value={message}
           onChange={handleChange}
+          className="message-input"
           id="message"
           aria-describedby="message-input"
         />

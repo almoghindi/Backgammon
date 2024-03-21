@@ -2,11 +2,14 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow-y: scroll;
+  overflow: auto;
+  max-height: 300px;
 }
 
 .message {
   width: 50%;
-  margin: 1em;
+  margin: 1em 0.5em;
 }
 .self {
   align-self: flex-end;
