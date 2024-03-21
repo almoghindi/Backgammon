@@ -1,0 +1,7 @@
+.sendmessage-form {
+  display: flex;
+}
+
+.send-btn {
+  padding: 0.5em 1em;
+}

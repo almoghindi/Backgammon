@@ -1,0 +1,13 @@
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.message {
+  width: 50%;
+  margin: 1em;
+}
+.self {
+  align-self: flex-end;
+}

@@ -5,9 +5,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import http from "http";
-import HttpError from "./models/HttpError.js";
 import ChatRoutes from "./routes/ChatRoutes.js";
-import { socketAuth } from "./middlewares/auth.js";
 dotenv.config();
 
 const app = express();
@@ -22,16 +20,23 @@ export const io = new Server(socketServer, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("connection");
-  socket.emit("user-connected");
-});
+const usernameToSocketIdMap = {};
+
+export function addUserToSocketMap(userData) {
+  const { username, socketId } = userData;
+  usernameToSocketIdMap[username] = socketId;
+}
+export function emitEventToUser(eventName, message, to) {
+  io.to(usernameToSocketIdMap[to]).emit(eventName, message);
+}
+
+io.on("connection", (socket) => {});
 
 app.use("/api/chat", ChatRoutes);
 
 app.use((req, res, next) => {
-  // const error = new HttpError("Could not find this route.", 404);
-  // throw error;
+  const error = new HttpError("Could not find this route.", 404);
+  throw error;
 });
 
 app.use((error, req, res, next) => {
