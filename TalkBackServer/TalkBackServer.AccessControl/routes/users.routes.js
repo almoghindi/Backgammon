@@ -22,7 +22,7 @@ router.post(
   register
 );
 router.post("/login", login);
-router.get("/refresh", refresh);
+router.post("/refresh", refresh);
 router.post("/logout", logout);
 // router.get("/getAllUsers", getAllUsers);
 // router.post("/getAllUsersByIds", getAllUsersByIds);
