@@ -1,56 +1,163 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { socket } from "../../socket/chatSocket.ts";
 import { AuthContext } from "../../context/auth-context";
-import { useNavigate } from "react-router";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
+import { Divider, Typography } from "@mui/material";
+import ChatInput from "../../components/Chat/ChatInput/ChatInput.tsx";
+import MessageModel from "../../components/Chat/models/MessageModel.ts";
+import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
+import { useHttpClient } from "../../hooks/useHttp.tsx";
+import CloseIcon from "@mui/icons-material/Close";
+import "./ChatWindow.css";
 
-class MessageModel {
-  constructor(sender: string, content: string) {
-    this.sender = sender;
-    this.content = content;
-    this.timestamp = new Date();
-  }
-  sender: string;
-  content: string;
-  timestamp: Date;
+interface UserData {
+  username: string;
+  socketId: string;
 }
 
-export default function ChatWindow() {
-  const [messages, setMessages] = useState<MessageModel[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { token, username } = useContext(AuthContext);
-  const navigate = useNavigate();
+interface ChatMessagesResponse {
+  chatId: string;
+  messages: MessageModel[];
+}
 
-  const addMessage = useCallback((sender: string, content: string) => {
-    const newMessage = new MessageModel(sender, content);
-    setMessages((prev) => [...prev, newMessage]);
-  }, []);
+interface Props {
+  chatBuddyUsername: string;
+  onCloseWindow: (value: string) => void;
+}
+
+export default function ChatWindow(props: Props) {
+  const { chatBuddyUsername, onCloseWindow } = props;
+  const [messages, setMessages] = useState<MessageModel[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [chatId, setChatId] = useState("");
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(true);
+  const auth = useContext(AuthContext);
+  const { username, token } = auth;
+  const { sendRequest } = useHttpClient();
+
+  const addMessage = (message: MessageModel) => {
+    setMessages((prev) => [...prev, message]);
+  };
+  function handleUserMesssage(
+    sender: string,
+    content: string,
+    timestamp: Date
+  ) {
+    const newMessage = new MessageModel(sender, content, timestamp);
+    addMessage(newMessage);
+    sendNewMessage(newMessage);
+    // socket.emit("send-message", { message: newMessage, to: chatBuddyUsername });
+  }
+  function handleIncomingMessage(messageJson: MessageModel) {
+    const message = messageJson;
+    addMessage(message);
+  }
+  const sendNewMessage = useCallback(
+    async (newMessage: MessageModel) => {
+      try {
+        const response = await sendRequest(
+          `http://localhost:3002/api/chat/new-message`,
+          "POST",
+          { message: newMessage, to: chatBuddyUsername },
+          { authorization: `Bearer ${token}` }
+        );
+        return response;
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [token, chatBuddyUsername]
+  );
+
+  const askToEnterChat = useCallback(
+    async (data: UserData) => {
+      try {
+        const response = await sendRequest(
+          `http://localhost:3002/api/chat/enter-chat`,
+          "POST",
+          { data, to: chatBuddyUsername },
+          { authorization: `Bearer ${token}` }
+        );
+        if (!response) throw new Error("enter chat failed");
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [token, chatBuddyUsername]
+  );
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const response = await sendRequest<ChatMessagesResponse>(
+        `http://localhost:3002/api/chat/fetchMessages`,
+        "POST",
+        { sender: username, reciever: chatBuddyUsername },
+        { authorization: `Bearer ${token}` }
+      );
+      if (!response) throw new Error("fetch failed");
+      setChatId(response.chatId);
+      setMessages(response.messages);
+      setIsLoadingMessages(false);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [token, username, chatBuddyUsername]);
 
   useEffect(() => {
-    function onConnect() {
-      socket.emit("authorize-token", token);
-    }
-    function onAuthorizationResult(resultobject: { authorization: boolean }) {
-      if (!resultobject.authorization) {
-        alert("User unauthorized");
-        navigate("/");
-      }
-      setIsLoading(false);
-      addMessage("admin", `${username} connected`);
+    function onConnect(sender: string) {
+      const name = username === sender ? "You" : sender;
+      const newMessage = new MessageModel(
+        "admin",
+        `${name} connected`,
+        new Date()
+      );
+      fetchMessages();
+      addMessage(newMessage);
     }
 
-    socket.on("user-connected", onConnect);
-    socket.on("authorization-result", onAuthorizationResult);
+    function onMount() {
+      if (!username) return;
+      const data = {
+        username: username,
+        socketId: socket.id === undefined ? "" : socket.id,
+      };
+      askToEnterChat(data);
+      onConnect(data.username);
+    }
+
+    onMount();
+    socket.on("user-joined", onConnect);
+    socket.on("new-message", handleIncomingMessage);
     return () => {
-      socket.off("user-connected", onConnect);
-      socket.on("authorization-result", onAuthorizationResult);
+      socket.off("user-joined", onConnect);
+      socket.off("new-message", handleIncomingMessage);
+      socket.disconnect();
     };
-  }, []);
+  }, [username]);
 
   return (
     <>
-      {isLoading && <LoadingSpinner />}
-      {messages && messages.map((m) => <p>{m.content}</p>)}
+      {isLoadingMessages && <LoadingSpinner />}
+      <div className="chat-window-header">
+        <Typography>Chat with: {chatBuddyUsername}</Typography>
+        <button
+          className="close-btn"
+          onClick={() => onCloseWindow(chatBuddyUsername)}
+        >
+          <CloseIcon />
+        </button>
+      </div>
+      <Divider />
+      <ChatMessagesBlock
+        messages={messages}
+        isLoading={isLoadingMessages}
+        username={username}
+      />
+      <ChatInput
+        addMessage={(content, timestamp) =>
+          handleUserMesssage(username, content, timestamp)
+        }
+      />
     </>
   );
 }

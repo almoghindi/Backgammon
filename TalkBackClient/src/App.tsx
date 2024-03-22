@@ -11,6 +11,8 @@ import { useAuth } from "./hooks/useAuth";
 import { AuthContext } from "./context/auth-context";
 import { useOnlineUsers } from "./hooks/useOnlineUsers";
 import { OnlineUsersContext } from "./context/online-users-context";
+import ChatTemp from "./features/Chat/ChatTemp";
+
 function App() {
   const { token, login, logout, userId, username } = useAuth();
   const { onlineUsers, addOnlineUser, removeOnlineUser } = useOnlineUsers();
@@ -41,7 +43,10 @@ function App() {
                   <Route path="*" element={<Navigate to="/auth" />} />
                 </>
               ) : (
-                <Route path="/" element={<HomePage />} />
+                <>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/chatdev" element={<ChatTemp />} />
+                </>
               )}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

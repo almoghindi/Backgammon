@@ -5,9 +5,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import http from "http";
-import HttpError from "./models/HttpError.js";
 import ChatRoutes from "./routes/ChatRoutes.js";
-import { socketAuth } from "./middlewares/auth.js";
 dotenv.config();
 
 const app = express();
@@ -22,30 +20,23 @@ export const io = new Server(socketServer, {
   },
 });
 
-io.on("connection", (socket) => {
-  socket.on("authorize-token", (token) => {
-    console.log(token);
-    socketAuth(token, (err) => {
-      if (err) {
-        console.log(err);
-        socket.emit("authorization-result", {
-          authorized: false,
-          message: err,
-        });
-        socket.disconnect(true);
-      } else {
-        console.log("hi");
-        socket.emit("authorization-result", { authorized: true });
-      }
-    });
-  });
-});
+const usernameToSocketIdMap = {};
+
+export function addUserToSocketMap(userData) {
+  const { username, socketId } = userData;
+  usernameToSocketIdMap[username] = socketId;
+}
+export function emitEventToUser(eventName, message, to) {
+  io.to(usernameToSocketIdMap[to]).emit(eventName, message);
+}
+
+io.on("connection", (socket) => {});
 
 app.use("/api/chat", ChatRoutes);
 
 app.use((req, res, next) => {
-  // const error = new HttpError("Could not find this route.", 404);
-  // throw error;
+  const error = new HttpError("Could not find this route.", 404);
+  throw error;
 });
 
 app.use((error, req, res, next) => {
