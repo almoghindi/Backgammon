@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   List,
   ListSubheader,
@@ -9,6 +9,8 @@ import {
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { OnlineUsersContext } from "../../context/online-users-context";
+import { AuthContext } from "../../context/auth-context";
 
 interface OfflineUser {
   userId: string;
@@ -22,20 +24,26 @@ interface OfflineUsersListProps {
 const OnlineUsersList: React.FC<OfflineUsersListProps> = ({ notification }) => {
   const [offlineUsers, setOfflineUsers] = useState<OfflineUser[]>([]);
   const { isLoading, sendRequest } = useHttpClient();
+  const { onlineUsers } = useContext(OnlineUsersContext);
+  const auth = useContext(AuthContext);
   useEffect(() => {
-    const fetchOfflineUsers = async () => {
-      try {
-        const responseData = await sendRequest<{ offlineUsers: OfflineUser[] }>(
-          `http://localhost:3004/api/users/offline`
-        );
-
-        setOfflineUsers(responseData.offlineUsers);
-      } catch (err) {
-        console.log(err);
-      }
-    };
     fetchOfflineUsers();
-  }, [notification]);
+  }, [onlineUsers, notification]);
+
+  const fetchOfflineUsers = async () => {
+    try {
+      const responseData = await sendRequest<{ offlineUsers: OfflineUser[] }>(
+        `http://localhost:3004/api/users/offline`
+      );
+
+      setOfflineUsers(responseData.offlineUsers);
+      setOfflineUsers((prev) =>
+        (prev || []).filter((user) => user.userId !== auth.userId)
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <>
       {isLoading && <LoadingSpinner />}

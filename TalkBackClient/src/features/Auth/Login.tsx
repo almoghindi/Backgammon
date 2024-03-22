@@ -5,6 +5,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { socket } from "../../utils/socketConnection";
 import axios from "axios";
+import { OnlineUsersContext } from "../../context/online-users-context";
 interface LoginResponse {
   userId: string;
   token: string;
@@ -19,7 +20,7 @@ const LoginPage: React.FC = () => {
 
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
-
+  const { addOnlineUser } = useContext(OnlineUsersContext);
   useEffect(() => {
     const username: string | null = localStorage.getItem("userName");
     if (username) {
@@ -65,10 +66,11 @@ const LoginPage: React.FC = () => {
         // );
 
         await axios.post(
-          "http://localhost:3004/api/users/online",
+          "http://localhost:3004/api/users/changeStatus",
           {
             userId: loginResponseData.userId,
             username: loginResponseData.username,
+            status: "online",
           },
           {
             headers: {
@@ -76,8 +78,8 @@ const LoginPage: React.FC = () => {
             },
           }
         );
-        console.log(loginResponseData);
-        socket.emit("user-logged-in", "hi");
+        addOnlineUser(loginResponseData.userId, loginResponseData.username);
+        socket.emit("user-logged-in", username);
       } catch (err) {
         setError("Authentication Failed, please try again.");
       }

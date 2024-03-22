@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import { useHttpClient } from "../hooks/useHttp";
@@ -6,36 +6,30 @@ import { AuthContext } from "../context/auth-context";
 import logo from "../assets/logo.png";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { socket } from "../utils/socketConnection";
-import Snackbar from "../components/Snackbar";
+import { OnlineUsersContext } from "../context/online-users-context";
 
-interface NavbarProps {
-  onOfflineNotification: (message: string) => void;
-}
-
-const NavBar: React.FC<NavbarProps> = ({ onOfflineNotification }) => {
-  const [open, setOpen] = useState(false);
+const NavBar: React.FC = () => {
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
-  const handleLogout = () => {
-    sendRequest(`http://localhost:3004/api/users/offline`, "POST", {
-      userId: auth.userId,
-      username: auth.username,
-    });
-    localStorage.setItem("userName", auth.username);
-    // socket.on("user-left", (message: string) => {
-    //   setOpen(true);
-    //   <Snackbar
-    //     snackbarOpen={open}
-    //     setSnackbarOpen={setOpen}
-    //     snackbarMessage={message}
-    //     variant="error"
-    //   />;
-
-    //   onOfflineNotification(message);
-    // });
-
-    // socket.disconnect();
-    auth.logout();
+  const { removeOnlineUser } = useContext(OnlineUsersContext);
+  const handleLogout = async () => {
+    try {
+      await sendRequest(
+        `http://localhost:3004/api/users/changeStatus`,
+        "POST",
+        {
+          userId: auth.userId,
+          username: auth.username,
+          status: "offline",
+        }
+      );
+      removeOnlineUser(auth.userId, auth.username);
+      localStorage.setItem("userName", auth.username);
+      socket.emit("user-logged-out", auth.username);
+      auth.logout();
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
   return (
     <>

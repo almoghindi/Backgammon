@@ -13,10 +13,11 @@ export default function initializeOnlineWebSocket(server) {
 
     socket.on("user-logged-in", (username) => {
       console.log("User logged in: ", username);
-      //socket.broadcast.emit("user-joined", `${username} is online`);
+      socket.broadcast.emit("user-joined", `${username} is online`);
     });
 
     socket.on("user-logged-out", (username) => {
+      console.log("hello");
       socket.broadcast.emit("user-left", `${username} is offline`);
     });
 
