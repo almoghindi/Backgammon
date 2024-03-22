@@ -45,9 +45,9 @@ function App() {
               ) : (
                 <>
                   <Route path="/" element={<HomePage />} />
-                  <Route path="/chatdev" element={<ChatTemp />} />
                 </>
               )}
+              <Route path="/chatdev" element={<ChatTemp />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Router>{" "}

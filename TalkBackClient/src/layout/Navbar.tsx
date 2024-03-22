@@ -5,7 +5,7 @@ import { useHttpClient } from "../hooks/useHttp";
 import { AuthContext } from "../context/auth-context";
 import logo from "../assets/logo.png";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { socket } from "../utils/socketConnection";
+import { onlineUsersSocket as socket } from "../utils/socketConnection";
 import { OnlineUsersContext } from "../context/online-users-context";
 
 const NavBar: React.FC = () => {

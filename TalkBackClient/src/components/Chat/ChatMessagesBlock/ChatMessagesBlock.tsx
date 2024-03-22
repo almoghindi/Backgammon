@@ -1,5 +1,5 @@
 import ChatMessage from "../ChatMessage/ChatMessage";
-import MessageModel from "../models/MessageModel";
+import MessageModel from "../../../types/message.model.tsx";
 import "./ChatMessagesBlock.css";
 import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect } from "react";

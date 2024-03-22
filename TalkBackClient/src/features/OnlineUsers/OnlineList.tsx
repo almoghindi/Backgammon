@@ -2,21 +2,15 @@ import React, { useState, useEffect, useContext } from "react";
 import { List, ListSubheader } from "@mui/material";
 import OnlineUser from "./OnlineUser";
 import { useHttpClient } from "../../hooks/useHttp";
-import LoadingSpinner from "../../components/LoadingSpinner";
+// import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { OnlineUsersContext } from "../../context/online-users-context";
+import { OnlineUser as OnlineUserInterface } from "../../types/OnlineUser";
+import { NotificationProps } from "../../types/Notification";
 
-interface OnlineUser {
-  userId: string;
-  username: string;
-}
-interface OnlineUsersListProps {
-  notification: string;
-}
-
-const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
+const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
   // const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-  const { isLoading, sendRequest } = useHttpClient();
+  const { sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
   // useEffect(() => {
   //   fetchOnlineUsers();
@@ -46,7 +40,9 @@ const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
   //   setOnlineUsers((prev) => prev.filter((user) => user.userId == auth.userId));
   // }, [onlineUsers]);
 
-  const [onlineUsersList, setOnlineUsersList] = useState<OnlineUser[]>([]);
+  const [onlineUsersList, setOnlineUsersList] = useState<OnlineUserInterface[]>(
+    []
+  );
   const { onlineUsers } = useContext(OnlineUsersContext);
   useEffect(() => {
     fetchOfflineUsers();
@@ -54,9 +50,9 @@ const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
 
   const fetchOfflineUsers = async () => {
     try {
-      const responseData = await sendRequest<{ onlineUsers: OnlineUser[] }>(
-        `http://localhost:3004/api/users/online`
-      );
+      const responseData = await sendRequest<{
+        onlineUsers: OnlineUserInterface[];
+      }>(`http://localhost:3004/api/users/online`);
 
       setOnlineUsersList(responseData.onlineUsers);
       setOnlineUsersList((prev) =>

@@ -1,9 +1,5 @@
 import { createContext } from "react";
-
-interface OnlineUser {
-  userId: string;
-  username: string;
-}
+import { OnlineUser } from "../types/OnlineUser";
 
 interface OnlineUsersContextType {
   onlineUsers: OnlineUser[];
