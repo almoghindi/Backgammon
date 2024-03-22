@@ -7,4 +7,5 @@ export default class MessageModel {
   sender: string;
   content: string;
   timestamp: Date;
+  isAdmin: boolean = false;
 }
