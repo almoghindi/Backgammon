@@ -38,6 +38,7 @@ export default function ChatWindow(props: Props) {
   const addMessage = (message: MessageModel) => {
     setMessages((prev) => [...prev, message]);
   };
+
   function handleUserMesssage(
     sender: string,
     content: string,
@@ -46,8 +47,8 @@ export default function ChatWindow(props: Props) {
     const newMessage = new MessageModel(sender, content, timestamp);
     addMessage(newMessage);
     sendNewMessage(newMessage);
-    // socket.emit("send-message", { message: newMessage, to: chatBuddyUsername });
   }
+
   function handleIncomingMessage(messageJson: MessageModel) {
     const message = messageJson;
     addMessage(message);
@@ -63,11 +64,30 @@ export default function ChatWindow(props: Props) {
         );
         return response;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     [token, chatBuddyUsername]
   );
+
+  const leaveChat = useCallback(async () => {
+    try {
+      const response = await sendRequest(
+        `http://localhost:3002/api/chat/leave-chat`,
+        "POST",
+        { sender: username, to: chatBuddyUsername },
+        { authorization: `Bearer ${token}` }
+      );
+      if (!response) throw new Error("leave chat failed");
+    } catch (err) {
+      console.error(err);
+    }
+  }, [chatBuddyUsername, username, token]);
+
+  const onLeaveChat = useCallback(async () => {
+    leaveChat();
+    onCloseWindow(chatBuddyUsername);
+  }, [chatBuddyUsername, leaveChat, onCloseWindow]);
 
   const askToEnterChat = useCallback(
     async (data: UserData) => {
@@ -80,7 +100,7 @@ export default function ChatWindow(props: Props) {
         );
         if (!response) throw new Error("enter chat failed");
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     [token, chatBuddyUsername]
@@ -122,16 +142,16 @@ export default function ChatWindow(props: Props) {
         socketId: socket.id === undefined ? "" : socket.id,
       };
       askToEnterChat(data);
-      onConnect(data.username);
+      onConnect(username);
     }
 
     onMount();
     socket.on("user-joined", onConnect);
     socket.on("new-message", handleIncomingMessage);
+    socket.on("user-disconnected", handleIncomingMessage);
     return () => {
       socket.off("user-joined", onConnect);
       socket.off("new-message", handleIncomingMessage);
-      socket.disconnect();
     };
   }, [username]);
 
@@ -140,10 +160,7 @@ export default function ChatWindow(props: Props) {
       {isLoadingMessages && <LoadingSpinner />}
       <div className="chat-window-header">
         <Typography>Chat with: {chatBuddyUsername}</Typography>
-        <button
-          className="close-btn"
-          onClick={() => onCloseWindow(chatBuddyUsername)}
-        >
+        <button className="close-btn" onClick={onLeaveChat}>
           <CloseIcon />
         </button>
       </div>

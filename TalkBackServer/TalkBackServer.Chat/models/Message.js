@@ -25,6 +25,9 @@ export const Chat = new Schema({
         type: Date,
         required: true,
       },
+      isAdmin: {
+        type: Boolean,
+      },
     },
   ],
 });

@@ -1,0 +1,12 @@
+.message-container {
+  text-align: center;
+  width: 75%;
+}
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.timestamp {
+  font-size: small;
+}

@@ -4,6 +4,7 @@ import "./ChatMessagesBlock.css";
 import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect } from "react";
 import LoadingSpinner from "../../LoadingSpinner";
+import AdminMessage from "../ChatMessage/AdminMessage";
 
 interface ChatMessages {
   messages: MessageModel[];
@@ -20,6 +21,12 @@ export default function ChatMessagesBlock(props: ChatMessages) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
+  const getClassName = (message: MessageModel) => {
+    let name = "message ";
+    if (message.isAdmin) name += "admin";
+    else if (message.sender === username) name += "self";
+    return name;
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -30,15 +37,16 @@ export default function ChatMessagesBlock(props: ChatMessages) {
         {isLoading && <LoadingSpinner />}
         {messages &&
           messages.map((m) => (
-            <div
-              key={uuidv4()}
-              className={m.sender === username ? "self message" : "message"}
-            >
-              <ChatMessage
-                sender={m.sender === username ? "You" : m.sender}
-                content={m.content}
-                timestamp={m.timestamp}
-              ></ChatMessage>
+            <div key={uuidv4()} className={getClassName(m)}>
+              {m.isAdmin ? (
+                <AdminMessage content={m.content} timestamp={m.timestamp} />
+              ) : (
+                <ChatMessage
+                  sender={m.sender === username ? "You" : m.sender}
+                  content={m.content}
+                  timestamp={m.timestamp}
+                ></ChatMessage>
+              )}
             </div>
           ))}
         <div ref={messagesEndRef} />

@@ -1,24 +1,22 @@
 import express from "express";
 import { auth } from "../middlewares/auth.js";
-import { addUserToSocketMap, emitEventToUser } from "../app.js";
 import {
   saveMessage,
   sendMessage,
   getChatBySenderReciever,
+  leaveChat,
+  enterChat,
 } from "../controller/ChatController.js";
 const router = express.Router();
 
-router.post("/enter-chat", auth, (req, res) => {
-  const { data, to } = req.body;
-  addUserToSocketMap(data);
-  emitEventToUser("user-joined", data.username, to);
-  res.status(200).json("user joined successfully");
-});
+router.post("/enter-chat", auth, enterChat, saveMessage);
 
 router.post("/new-message", auth, sendMessage, saveMessage);
 
 router.post("/save-message", auth, saveMessage);
 
 router.post("/fetchMessages", auth, getChatBySenderReciever);
+
+router.post("/leave-chat", auth, leaveChat, saveMessage);
 
 export default router;
