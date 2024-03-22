@@ -27,7 +27,6 @@ export const generateRefreshToken = (userId) => {
 
 export const verifyToken = (token, secret) => {
   let payload;
-  console.log("token:" + token);
   try {
     payload = jwt.verify(token, secret);
   } catch (err) {

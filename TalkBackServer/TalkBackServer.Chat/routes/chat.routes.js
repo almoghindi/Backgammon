@@ -4,13 +4,9 @@ import {
   saveMessage,
   sendMessage,
   getChatBySenderReciever,
-<<<<<<< HEAD:TalkBackServer/TalkBackServer.Chat/routes/chat.routes.js
-} from "../controllers/chat.controller.js";
-=======
   leaveChat,
   enterChat,
-} from "../controller/ChatController.js";
->>>>>>> 21c2234b6f4db15c7334248a0e6e4ab706812f3f:TalkBackServer/TalkBackServer.Chat/routes/ChatRoutes.js
+} from "../controllers/chat.controller.js";
 const router = express.Router();
 
 router.post("/enter-chat", auth, enterChat, saveMessage);

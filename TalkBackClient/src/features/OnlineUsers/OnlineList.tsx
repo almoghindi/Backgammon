@@ -7,6 +7,9 @@ import { AuthContext } from "../../context/auth-context";
 import { OnlineUsersContext } from "../../context/online-users-context";
 import { OnlineUser as OnlineUserInterface } from "../../types/OnlineUser";
 import { NotificationProps } from "../../types/Notification";
+import ChatWindow from "../Chat/ChatWindow";
+import { v4 as uuidv4 } from "uuid";
+import "./OnlineList.css";
 
 const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
   // const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
@@ -48,6 +51,17 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
     fetchOfflineUsers();
   }, [onlineUsers, notification]);
 
+  const [activeChats, setActiveChats] = useState<string[]>([]);
+
+  function openChatWindow(user: string) {
+    if (activeChats.includes(user)) return;
+    setActiveChats((prev) => [...prev, user]);
+  }
+
+  function closeChatWindow(user: string) {
+    setActiveChats((prev) => prev.filter((u) => u !== user));
+  }
+
   const fetchOfflineUsers = async () => {
     try {
       const responseData = await sendRequest<{
@@ -72,11 +86,22 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
             <OnlineUser
               key={user.userId}
               username={user.username}
-              onChat={() => {}}
+              onChat={() => {
+                openChatWindow(user.username);
+              }}
               onPlay={() => {}}
             />
           ))}
       </List>
+      {activeChats &&
+        activeChats.map((user) => (
+          <div key={uuidv4()} className="chat-window">
+            <ChatWindow
+              chatBuddyUsername={user}
+              onCloseWindow={closeChatWindow}
+            />
+          </div>
+        ))}
     </>
   );
 };
