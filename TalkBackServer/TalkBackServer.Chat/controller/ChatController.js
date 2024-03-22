@@ -27,19 +27,23 @@ export async function saveMessage(req, res, next) {
 }
 
 export async function enterChat(req, res, next) {
-  const { data, to } = req.body;
-  addUserToSocketMap(data);
-  emitEventToUser("user-joined", data.username, to);
-  const chatId = (await getChat(data.username, to)).chatId;
-  req.messageData = {
-    sender: data.username,
-    content: `${data.username} joined`,
-    timestamp: new Date(),
-    reciever: to,
-    isAdmin: true,
-  };
-  req.chatId = chatId;
-  return next();
+  try {
+    const { data, to } = req.body;
+    addUserToSocketMap(data);
+    emitEventToUser("user-joined", data.username, to);
+    const chatId = (await getChat(data.username, to)).chatId;
+    req.messageData = {
+      sender: data.username,
+      content: `${data.username} joined`,
+      timestamp: new Date(),
+      reciever: to,
+      isAdmin: true,
+    };
+    req.chatId = chatId;
+    return next();
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export async function sendMessage(req, res, next) {
