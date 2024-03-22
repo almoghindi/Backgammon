@@ -3,30 +3,38 @@ import { socket } from "../../utils/socketConnection";
 import Snackbar from "../../components/Snackbar";
 
 interface NotificationProps {
-  onOnlineNotification: (message: string) => void;
+  onNotification: (message: string) => void;
 }
 
 const OnlineUserNotification: React.FC<NotificationProps> = ({
-  onOnlineNotification,
+  onNotification,
 }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-
+  const [onlineStatus, setOnlineStatus] = useState(false);
   useEffect(() => {
-    // socket.on("user-joined", (message: string) => {
-    //   setSnackbarMessage(message);
-    //   setSnackbarOpen(true);
-    //   console.log(message);
-    // });
-    // return () => {
-    //   socket.off("user-joined");
-    // };
+    socket.on("user-joined", (message: string) => {
+      setSnackbarMessage(message);
+      setSnackbarOpen(true);
+      setOnlineStatus(true);
+    });
+    socket.on("user-left", (message: string) => {
+      setSnackbarMessage(message);
+      setSnackbarOpen(true);
+      setOnlineStatus(false);
+    });
+    return () => {
+      if (onlineStatus) {
+        socket.off("user-joined");
+      } else {
+        socket.off("user-left");
+      }
+    };
   }, []);
 
   useEffect(() => {
-    onOnlineNotification(snackbarMessage);
-    console.log(snackbarMessage);
-  }, [snackbarMessage, onOnlineNotification]);
+    onNotification(snackbarMessage);
+  }, [snackbarMessage, onNotification]);
 
   return (
     <>
@@ -34,7 +42,7 @@ const OnlineUserNotification: React.FC<NotificationProps> = ({
         snackbarOpen={snackbarOpen}
         setSnackbarOpen={setSnackbarOpen}
         snackbarMessage={snackbarMessage}
-        variant="success"
+        variant={onlineStatus ? "success" : "error"}
       />
     </>
   );

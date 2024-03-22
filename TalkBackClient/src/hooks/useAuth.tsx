@@ -40,7 +40,6 @@ export const useAuth = () => {
         expiration: tokenExpirationDate.toISOString(),
         username: username,
       };
-
       if (localStorage.getItem("userName")) {
         localStorage.removeItem("userName");
       }
@@ -60,7 +59,6 @@ export const useAuth = () => {
 
   const refresh = async (refreshToken: string): Promise<string> => {
     try {
-      console.log(refreshToken);
       const response = await axios.post(
         "http://localhost:3001/api/users/refresh",
         { refreshToken },
