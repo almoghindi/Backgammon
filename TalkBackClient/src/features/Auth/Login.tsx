@@ -3,7 +3,7 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
-import { socket } from "../../utils/socketConnection";
+import { onlineUsersSocket as socket } from "../../utils/socketConnection";
 import axios from "axios";
 import { OnlineUsersContext } from "../../context/online-users-context";
 interface LoginResponse {

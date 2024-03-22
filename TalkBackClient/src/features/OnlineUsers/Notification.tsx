@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { socket } from "../../utils/socketConnection";
+import { onlineUsersSocket as socket } from "../../utils/socketConnection";
 import Snackbar from "../../components/Snackbar";
 
 interface NotificationProps {

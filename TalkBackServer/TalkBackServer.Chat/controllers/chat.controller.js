@@ -1,4 +1,4 @@
-import Chat from "../models/Message.js";
+import Chat from "../models/message.js";
 import { emitEventToUser } from "../app.js";
 
 export async function saveMessage(req, res, next) {
