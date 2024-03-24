@@ -47,7 +47,7 @@ const OnlineUsersList: React.FC<OfflineUsersListProps> = ({ notification }) => {
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      <List sx={{ width: "100%" }} subheader={<li />}>
+      <List sx={{ width: "100%", zIndex: -1 }} subheader={<li />}>
         <ListSubheader>Offline</ListSubheader>
         {offlineUsers.map((user) => (
           <ListItem key={user.userId}>

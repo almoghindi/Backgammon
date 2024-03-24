@@ -2,9 +2,9 @@ import React, { useState, useEffect, useContext } from "react";
 import { List, ListSubheader } from "@mui/material";
 import OnlineUser from "./OnlineUser";
 import { useHttpClient } from "../../hooks/useHttp";
-import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { OnlineUsersContext } from "../../context/online-users-context";
+import SlidingChatPanel from "../Chat/SlidingChat/SlidingChat";
 
 interface OnlineUser {
   userId: string;
@@ -45,6 +45,14 @@ const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
   // useEffect(() => {
   //   setOnlineUsers((prev) => prev.filter((user) => user.userId == auth.userId));
   // }, [onlineUsers]);
+  const [openChats, setOpenChats] = useState<string>("");
+
+  const handleCloseChat = () => {
+    setOpenChats("");
+  };
+  const openChat = (user: string) => {
+    setOpenChats(user);
+  };
 
   const [onlineUsersList, setOnlineUsersList] = useState<OnlineUser[]>([]);
   const { onlineUsers } = useContext(OnlineUsersContext);
@@ -66,21 +74,38 @@ const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
       console.log(err);
     }
   };
+
   return (
     <>
       {/* {isLoading && <LoadingSpinner />} */}
       <List sx={{ width: "100%" }} subheader={<li />}>
-        <ListSubheader>Online</ListSubheader>
+        <ListSubheader sx={{ zIndex: -1 }}>Online</ListSubheader>
         {onlineUsersList &&
           onlineUsersList.map((user) => (
             <OnlineUser
               key={user.userId}
               username={user.username}
-              onChat={() => {}}
+              onChat={() => {
+                openChat(user.username);
+              }}
               onPlay={() => {}}
             />
           ))}
       </List>
+      <SlidingChatPanel
+        isOpen={openChats !== ""}
+        openChat={openChats}
+        setIsOpen={handleCloseChat}
+      />
+      {/* {openChats &&
+        openChats.map((user) => (
+          <div key={user} style={{ width: "50%" }}>
+            <ChatWindow
+              chatBuddyUsername={user}
+              onCloseWindow={() => closeChat(user)}
+            />
+          </div>
+        ))} */}
     </>
   );
 };

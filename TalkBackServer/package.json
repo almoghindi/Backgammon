@@ -10,12 +10,14 @@
     "start:Chat": "nodemon --watch ./TalkBackServer.Chat ./TalkBackServer.Chat/app.js",
     "start:Game": "nodemon --watch ./TalkBackServer.Game ./TalkBackServer.Game/app.js",
     "start:OnlineUsers": "nodemon --watch ./TalkBackServer.OnlineUsers ./TalkBackServer.OnlineUsers/app.js",
-    "start:all": "concurrently \"npm: start:AccessControl\" \"npm: start:Chat\" \"npm: start:Game\" \"npm: start:OnlineUsers\""
+    "start:all": "concurrently \"npm: start:AccessControl\" \"npm: start:Chat\" \"npm: start:Game\" \"npm: start:OnlineUsers\"",
+    "start:all-nogame": "concurrently \"npm run start:AccessControl\" \"npm run start:Chat\" \"npm run start:OnlineUsers\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -27,5 +29,8 @@
     "nodemon": "^3.1.0",
     "redis": "^4.6.13",
     "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

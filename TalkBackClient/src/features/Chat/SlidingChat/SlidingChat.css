@@ -1,0 +1,8 @@
+.sliding-pane {
+  z-index: 4;
+  background-color: #676767;
+}
+
+.slide-pane__header {
+  background-color: #676767;
+}

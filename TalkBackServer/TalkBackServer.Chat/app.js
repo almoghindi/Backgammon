@@ -20,14 +20,8 @@ export const io = new Server(socketServer, {
   },
 });
 
-const usernameToSocketIdMap = {};
-
-export function addUserToSocketMap(userData) {
-  const { username, socketId } = userData;
-  usernameToSocketIdMap[username] = socketId;
-}
 export function emitEventToUser(eventName, message, to) {
-  io.to(usernameToSocketIdMap[to]).emit(eventName, message);
+  io.to(to).emit(eventName, message);
 }
 
 io.on("connection", (socket) => {});

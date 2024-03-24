@@ -8,6 +8,7 @@ import MessageModel from "../../components/Chat/models/MessageModel.ts";
 import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
 import { useHttpClient } from "../../hooks/useHttp.tsx";
 import CloseIcon from "@mui/icons-material/Close";
+import { v4 as uuidv4 } from "uuid";
 import "./ChatWindow.css";
 
 interface UserData {
@@ -25,6 +26,11 @@ interface Props {
   onCloseWindow: (value: string) => void;
 }
 
+interface SendMessageResponse {
+  success: boolean;
+  message: string;
+}
+
 export default function ChatWindow(props: Props) {
   const { chatBuddyUsername, onCloseWindow } = props;
   const [messages, setMessages] = useState<MessageModel[]>([]);
@@ -36,6 +42,7 @@ export default function ChatWindow(props: Props) {
   const { sendRequest } = useHttpClient();
 
   const addMessage = (message: MessageModel) => {
+    console.log(message);
     setMessages((prev) => [...prev, message]);
   };
 
@@ -44,31 +51,49 @@ export default function ChatWindow(props: Props) {
     content: string,
     timestamp: Date
   ) {
-    const newMessage = new MessageModel(sender, content, timestamp);
+    const newMessage = new MessageModel(sender, content, timestamp, uuidv4());
     addMessage(newMessage);
     sendNewMessage(newMessage);
   }
 
   function handleIncomingMessage(messageJson: MessageModel) {
     const message = messageJson;
-    addMessage(message);
+    if (message.sender !== chatBuddyUsername) return;
+    addMessage({ ...message, isSent: true });
   }
-  const sendNewMessage = useCallback(
-    async (newMessage: MessageModel) => {
-      try {
-        const response = await sendRequest(
-          `http://localhost:3002/api/chat/new-message`,
-          "POST",
-          { message: newMessage, to: chatBuddyUsername },
-          { authorization: `Bearer ${token}` }
-        );
-        return response;
-      } catch (err) {
-        console.error(err);
+
+  const sendNewMessage = async (messageToSend: MessageModel) => {
+    try {
+      const response = await sendRequest<SendMessageResponse>(
+        `http://localhost:3002/api/chat/new-message`,
+        "POST",
+        { message: messageToSend, to: chatBuddyUsername },
+        { authorization: `Bearer ${token}` }
+      );
+      console.log(response);
+      if (!response.success) {
+        setMessages((prevMessages) => {
+          return prevMessages.map((msg) => {
+            if (msg.messageId === messageToSend.messageId) {
+              return { ...msg, isError: true, isSent: false };
+            }
+            return msg;
+          });
+        });
+        throw new Error(response.message);
       }
-    },
-    [token, chatBuddyUsername]
-  );
+      setMessages((prevMessages) => {
+        return prevMessages.map((msg) => {
+          if (msg.messageId === messageToSend.messageId) {
+            return { ...msg, isError: false, isSent: true };
+          }
+          return msg;
+        });
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const leaveChat = useCallback(async () => {
     try {
@@ -125,14 +150,8 @@ export default function ChatWindow(props: Props) {
 
   useEffect(() => {
     function onConnect(sender: string) {
-      const name = username === sender ? "You" : sender;
-      const newMessage = new MessageModel(
-        "admin",
-        `${name} connected`,
-        new Date()
-      );
+      if (sender !== username && sender !== chatBuddyUsername) return;
       fetchMessages();
-      addMessage(newMessage);
     }
 
     function onMount() {
@@ -141,17 +160,16 @@ export default function ChatWindow(props: Props) {
         username: username,
         socketId: socket.id === undefined ? "" : socket.id,
       };
-      askToEnterChat(data);
+      // askToEnterChat(data);
       onConnect(username);
     }
 
     onMount();
-    socket.on("user-joined", onConnect);
     socket.on("new-message", handleIncomingMessage);
     socket.on("user-disconnected", handleIncomingMessage);
     return () => {
-      socket.off("user-joined", onConnect);
       socket.off("new-message", handleIncomingMessage);
+      socket.on("user-disconnected", handleIncomingMessage);
     };
   }, [username]);
 

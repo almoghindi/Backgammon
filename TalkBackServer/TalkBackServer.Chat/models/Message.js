@@ -28,6 +28,17 @@ export const Chat = new Schema({
       isAdmin: {
         type: Boolean,
       },
+      messageId: {
+        type: String,
+        required: true,
+      },
+      isSent: {
+        type: Boolean,
+        required: true,
+      },
+      isError: {
+        type: Boolean,
+      },
     },
   ],
 });
