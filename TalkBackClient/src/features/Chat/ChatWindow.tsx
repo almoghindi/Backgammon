@@ -1,10 +1,10 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { socket } from "../../socket/chatSocket.ts";
+import { chatSocket as socket } from "../../utils/socketConnection";
 import { AuthContext } from "../../context/auth-context";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
 import { Divider, Typography } from "@mui/material";
 import ChatInput from "../../components/Chat/ChatInput/ChatInput.tsx";
-import MessageModel from "../../components/Chat/models/MessageModel.ts";
+import MessageModel from "../../types/message.model.tsx";
 import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
 import { useHttpClient } from "../../hooks/useHttp.tsx";
 import CloseIcon from "@mui/icons-material/Close";

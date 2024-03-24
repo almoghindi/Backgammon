@@ -11,18 +11,11 @@ import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { OnlineUsersContext } from "../../context/online-users-context";
 import { AuthContext } from "../../context/auth-context";
+import { OnlineUser } from "../../types/OnlineUser";
+import { NotificationProps } from "../../types/Notification";
 
-interface OfflineUser {
-  userId: string;
-  username: string;
-}
-
-interface OfflineUsersListProps {
-  notification: string;
-}
-
-const OnlineUsersList: React.FC<OfflineUsersListProps> = ({ notification }) => {
-  const [offlineUsers, setOfflineUsers] = useState<OfflineUser[]>([]);
+const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
+  const [offlineUsers, setOfflineUsers] = useState<OnlineUser[]>([]);
   const { isLoading, sendRequest } = useHttpClient();
   const { onlineUsers } = useContext(OnlineUsersContext);
   const auth = useContext(AuthContext);
@@ -32,7 +25,7 @@ const OnlineUsersList: React.FC<OfflineUsersListProps> = ({ notification }) => {
 
   const fetchOfflineUsers = async () => {
     try {
-      const responseData = await sendRequest<{ offlineUsers: OfflineUser[] }>(
+      const responseData = await sendRequest<{ offlineUsers: OnlineUser[] }>(
         `http://localhost:3004/api/users/offline`
       );
 

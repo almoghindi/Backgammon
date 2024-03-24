@@ -2,21 +2,17 @@ import React, { useState, useEffect, useContext } from "react";
 import { List, ListSubheader } from "@mui/material";
 import OnlineUser from "./OnlineUser";
 import { useHttpClient } from "../../hooks/useHttp";
+import SlidingChatPanel from "../Chat/SlidingChat/SlidingChat";
+// import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { OnlineUsersContext } from "../../context/online-users-context";
-import SlidingChatPanel from "../Chat/SlidingChat/SlidingChat";
+import { OnlineUser as OnlineUserInterface } from "../../types/OnlineUser";
+import { NotificationProps } from "../../types/Notification";
+import "./OnlineList.css";
 
-interface OnlineUser {
-  userId: string;
-  username: string;
-}
-interface OnlineUsersListProps {
-  notification: string;
-}
-
-const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
+const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
   // const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-  const { isLoading, sendRequest } = useHttpClient();
+  const { sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
   // useEffect(() => {
   //   fetchOnlineUsers();
@@ -54,17 +50,30 @@ const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ notification }) => {
     setOpenChats(user);
   };
 
-  const [onlineUsersList, setOnlineUsersList] = useState<OnlineUser[]>([]);
+  const [onlineUsersList, setOnlineUsersList] = useState<OnlineUserInterface[]>(
+    []
+  );
   const { onlineUsers } = useContext(OnlineUsersContext);
   useEffect(() => {
-    fetchOfflineUsers();
+    fetchOnlineUsers();
   }, [onlineUsers, notification]);
 
-  const fetchOfflineUsers = async () => {
+  const [activeChats, setActiveChats] = useState<string[]>([]);
+
+  function openChatWindow(user: string) {
+    if (activeChats.includes(user)) return;
+    setActiveChats((prev) => [...prev, user]);
+  }
+
+  function closeChatWindow(user: string) {
+    setActiveChats((prev) => prev.filter((u) => u !== user));
+  }
+
+  const fetchOnlineUsers = async () => {
     try {
-      const responseData = await sendRequest<{ onlineUsers: OnlineUser[] }>(
-        `http://localhost:3004/api/users/online`
-      );
+      const responseData = await sendRequest<{
+        onlineUsers: OnlineUserInterface[];
+      }>(`http://localhost:3004/api/users/online`);
 
       setOnlineUsersList(responseData.onlineUsers);
       setOnlineUsersList((prev) =>

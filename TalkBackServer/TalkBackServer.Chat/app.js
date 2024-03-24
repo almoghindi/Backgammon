@@ -5,7 +5,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import http from "http";
-import ChatRoutes from "./routes/ChatRoutes.js";
+import ChatRoutes from "./routes/chat.routes.js";
 dotenv.config();
 
 const app = express();

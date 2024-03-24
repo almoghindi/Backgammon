@@ -6,7 +6,7 @@ import {
   getChatBySenderReciever,
   leaveChat,
   enterChat,
-} from "../controller/ChatController.js";
+} from "../controllers/chat.controller.js";
 const router = express.Router();
 
 router.post("/enter-chat", auth, enterChat, saveMessage);

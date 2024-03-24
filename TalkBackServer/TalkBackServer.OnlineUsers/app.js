@@ -21,7 +21,11 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/users", OnlineUsersRoutes);
 
-initializeOnlineWebSocket(server);
+const io = initializeOnlineWebSocket(server);
+
+export const pushMessage = (message, to) => {
+  io.to(usernameToSocketIdMap[to]).emit("push-message", message);
+};
 
 app.use((req, res, next) => {
   const error = new Error("Could not find this route.");
