@@ -4,7 +4,6 @@ import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { onlineUsersSocket as socket } from "../../utils/socketConnection";
-import axios from "axios";
 import { OnlineUsersContext } from "../../context/online-users-context";
 interface LoginResponse {
   userId: string;
@@ -65,19 +64,6 @@ const LoginPage: React.FC = () => {
         //   }
         // );
 
-        await axios.post(
-          "http://localhost:3004/api/users/changeStatus",
-          {
-            userId: loginResponseData.userId,
-            username: loginResponseData.username,
-            status: "online",
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${loginResponseData.token}`,
-            },
-          }
-        );
         addOnlineUser(loginResponseData.userId, loginResponseData.username);
         socket.emit("user-logged-in", username);
       } catch (err) {

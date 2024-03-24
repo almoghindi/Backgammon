@@ -48,7 +48,7 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
   );
   const { onlineUsers } = useContext(OnlineUsersContext);
   useEffect(() => {
-    fetchOfflineUsers();
+    fetchOnlineUsers();
   }, [onlineUsers, notification]);
 
   const [activeChats, setActiveChats] = useState<string[]>([]);
@@ -62,7 +62,7 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
     setActiveChats((prev) => prev.filter((u) => u !== user));
   }
 
-  const fetchOfflineUsers = async () => {
+  const fetchOnlineUsers = async () => {
     try {
       const responseData = await sendRequest<{
         onlineUsers: OnlineUserInterface[];

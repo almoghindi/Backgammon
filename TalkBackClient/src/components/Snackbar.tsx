@@ -5,14 +5,14 @@ interface SnackbarProps {
   snackbarOpen: boolean;
   setSnackbarOpen: (value: React.SetStateAction<boolean>) => void;
   snackbarMessage: string;
-  variant: "success" | "error";
+  severity: "success" | "error" | "info";
 }
 
 const SnackbarComponent: React.FC<SnackbarProps> = ({
   snackbarOpen,
   setSnackbarOpen,
   snackbarMessage,
-  variant,
+  severity,
 }) => {
   return (
     <Snackbar
@@ -24,7 +24,7 @@ const SnackbarComponent: React.FC<SnackbarProps> = ({
     >
       <Alert
         onClose={() => setSnackbarOpen(false)}
-        severity={variant}
+        severity={severity}
         sx={{ width: "100%" }}
       >
         {snackbarMessage}

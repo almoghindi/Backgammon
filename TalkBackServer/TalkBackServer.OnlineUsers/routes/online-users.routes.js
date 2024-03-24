@@ -6,6 +6,7 @@ import {
   getOfflineUsers,
   getOnlineUsers,
   addUserOrChangeUserStatus,
+  getOnlineUser,
 } from "../controllers/online-users.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ const router = express.Router();
 router.get("/online", getOnlineUsers);
 router.get("/offline", auth, getOfflineUsers);
 router.post("/changeStatus", addUserOrChangeUserStatus);
+router.get("/:username", getOnlineUser);
 
 export default router;

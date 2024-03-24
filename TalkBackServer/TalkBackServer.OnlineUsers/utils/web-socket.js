@@ -1,5 +1,6 @@
 import { Server as socketIo } from "socket.io";
 
+export const usernameToSocketIdMap = {};
 export default function initializeOnlineWebSocket(server) {
   const io = new socketIo(server, {
     cors: {
@@ -12,12 +13,11 @@ export default function initializeOnlineWebSocket(server) {
     console.log("A user connected");
 
     socket.on("user-logged-in", (username) => {
-      console.log("User logged in: ", username);
+      usernameToSocketIdMap[username] = socket.id;
       socket.broadcast.emit("user-joined", `${username} is online`);
     });
 
     socket.on("user-logged-out", (username) => {
-      console.log("hello");
       socket.broadcast.emit("user-left", `${username} is offline`);
     });
 
@@ -25,4 +25,5 @@ export default function initializeOnlineWebSocket(server) {
       console.log("User disconnected");
     });
   });
+  return io;
 }

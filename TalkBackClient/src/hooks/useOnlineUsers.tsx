@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useHttpClient } from "./useHttp";
+import { OnlineUser } from "../types/OnlineUser";
 export const useOnlineUsers = () => {
-  const [onlineUsers, setOnlineUsers] = useState<
-    { userId: string; username: string }[]
-  >([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const { sendRequest } = useHttpClient();
 
   const fetchChangeOnlineUser = async (
@@ -32,7 +31,7 @@ export const useOnlineUsers = () => {
   useEffect(() => {
     const fetchOnlineUsers = async () => {
       const response = await sendRequest<{
-        onlineUsers: Array<{ userId: string; username: string }>;
+        onlineUsers: OnlineUser[];
       }>("http://localhost:3004/api/users/online");
       setOnlineUsers(
         response.onlineUsers.map((user) => ({

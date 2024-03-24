@@ -1,5 +1,6 @@
-import user from "../models/user.js";
 import User from "../models/user.js";
+import { usernameToSocketIdMap } from "../utils/web-socket.js";
+import { pushMessage } from "../app.js";
 // import redisClient from "../utils/redis.js";
 // import { deleteOfflineUser } from "./offline-users.controller.js";
 // export const getOnlineUsers = async (req, res, next) => {
@@ -85,6 +86,25 @@ export const addUserOrChangeUserStatus = async (req, res, next) => {
         .status(200)
         .json({ message: "User status updated successfully!" });
     }
+  } catch (err) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const getOnlineUser = async (req, res) => {
+  const { username } = req.params;
+  if (!username) {
+    return res.status(400).json({ error: "Missing username" });
+  }
+
+  try {
+    const onlineUser = await User.findOne({ username });
+    if (!onlineUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    console.log(onlineUser);
+    // pushMessage(`${username} sent you a message`, username);
+
+    return res.status(200).json({ socketId: usernameToSocketIdMap[username] });
   } catch (err) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
