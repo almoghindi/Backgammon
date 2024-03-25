@@ -8,9 +8,7 @@ interface NotificationProps {
   onNotification: (message: string) => void;
 }
 
-const OnlineUserNotification: React.FC<NotificationProps> = ({
-  onNotification,
-}) => {
+const Notification: React.FC<NotificationProps> = ({ onNotification }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [onlineStatus, setOnlineStatus] = useState(false);
@@ -79,4 +77,4 @@ const OnlineUserNotification: React.FC<NotificationProps> = ({
   );
 };
 
-export default OnlineUserNotification;
+export default Notification;
