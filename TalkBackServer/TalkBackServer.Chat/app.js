@@ -13,6 +13,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+const usernameToSocketIdMap = {};
+
 const socketServer = http.createServer(app);
 export const io = new Server(socketServer, {
   cors: {
@@ -21,8 +23,15 @@ export const io = new Server(socketServer, {
 });
 
 export function emitEventToUser(eventName, message, to) {
-  io.to(to).emit(eventName, message);
+  console.log("asdasdgfdfgfdsfg");
+  console.log(usernameToSocketIdMap);
+  console.log(to);
+  console.log(usernameToSocketIdMap[to]);
+  io.to(usernameToSocketIdMap[to]).emit(eventName, message);
 }
+export const addUserToSocketMap = ({ username, socketId }) => {
+  usernameToSocketIdMap[username] = socketId;
+};
 
 io.on("connection", (socket) => {});
 

@@ -17,6 +17,6 @@ const router = express.Router();
 router.get("/online", getOnlineUsers);
 router.get("/offline", auth, getOfflineUsers);
 router.post("/changeStatus", addUserOrChangeUserStatus);
-router.get("/:username", getOnlineUser);
+router.post("/sendMessage", getOnlineUser);
 
 export default router;

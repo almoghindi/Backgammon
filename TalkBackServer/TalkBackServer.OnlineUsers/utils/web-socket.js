@@ -14,7 +14,12 @@ export default function initializeOnlineWebSocket(server) {
 
     socket.on("user-logged-in", (username) => {
       usernameToSocketIdMap[username] = socket.id;
+      console.log(usernameToSocketIdMap);
       socket.broadcast.emit("user-joined", `${username} is online`);
+    });
+
+    socket.on("user-online", (username) => {
+      usernameToSocketIdMap[username] = socket.id;
     });
 
     socket.on("user-logged-out", (username) => {

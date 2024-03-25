@@ -7,10 +7,12 @@ import DoneIcon from "@mui/icons-material/Done";
 
 interface ChatMessageProps {
   message: MessageModel;
+  isSelf: boolean;
 }
 
 export default function ChatMessage(props: ChatMessageProps) {
   const { sender, content, timestamp, isError, isSent } = props.message;
+  const { isSelf } = props;
   const formattedTimestamp: Date = useMemo(() => {
     if (typeof timestamp === "string") {
       return new Date(timestamp);
@@ -23,7 +25,7 @@ export default function ChatMessage(props: ChatMessageProps) {
       <div>
         <Card>
           <div className="card-header">
-            <Typography ml={1}>{sender}</Typography>
+            <Typography ml={1}>{isSelf ? "You" : sender}</Typography>
             <Typography mr={1}></Typography>
           </div>
           <Divider></Divider>
@@ -44,7 +46,7 @@ export default function ChatMessage(props: ChatMessageProps) {
                 alignItems: "center",
               }}
             >
-              <DoneIcon />
+              {isSelf && <DoneIcon />}
               {formattedTimestamp && formattedTimestamp.toLocaleTimeString()}
             </div>
           )}

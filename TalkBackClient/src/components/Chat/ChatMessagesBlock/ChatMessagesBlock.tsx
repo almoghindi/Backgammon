@@ -41,7 +41,10 @@ export default function ChatMessagesBlock(props: ChatMessages) {
               {m.isAdmin ? (
                 <AdminMessage content={m.content} timestamp={m.timestamp} />
               ) : (
-                <ChatMessage message={m}></ChatMessage>
+                <ChatMessage
+                  message={m}
+                  isSelf={m.sender === username}
+                ></ChatMessage>
               )}
             </div>
           ))}

@@ -7,7 +7,9 @@ dotenv.config();
 
 // import OfflineUsersRoutes from "./routes/offline-users.routes.js";
 import OnlineUsersRoutes from "./routes/online-users.routes.js";
-import initializeOnlineWebSocket from "./utils/web-socket.js";
+import initializeOnlineWebSocket, {
+  usernameToSocketIdMap,
+} from "./utils/web-socket.js";
 
 const app = express();
 const server = http.createServer(app); // Create HTTP server

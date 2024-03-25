@@ -1,9 +1,11 @@
 import Chat from "../models/message.js";
 import { emitEventToUser } from "../app.js";
 import { addUserToSocketMap } from "../app.js";
+import axios from "axios";
 
 export async function saveMessage(req, res, next) {
   const { messageData } = req;
+  console.log(messageData);
   try {
     let chat;
     if (!req.chatId) {
@@ -17,46 +19,67 @@ export async function saveMessage(req, res, next) {
       timestamp: messageData.timestamp,
       content: messageData.content,
       isAdmin: messageData.isAdmin,
+      isSent: messageData.isSent,
+      isError: messageData.isError,
+      messageId: messageData.messageId,
     };
     chat.messages.push(message);
     await chat.save();
-    return res.status(201).send({ message: "Message saved successfully" });
+    return res;
   } catch (err) {
     return next(err);
   }
 }
 
 export async function enterChat(req, res, next) {
-  try {
-    const { data, to } = req.body;
-    addUserToSocketMap(data);
-    emitEventToUser("user-joined", data.username, to);
-    const chatId = (await getChat(data.username, to)).chatId;
-    req.messageData = {
-      sender: data.username,
-      content: `${data.username} joined`,
-      timestamp: new Date(),
-      reciever: to,
-      isAdmin: true,
-    };
-    req.chatId = chatId;
-    return next();
-  } catch (err) {
-    console.error(err);
-  }
+  console.log("in enter chattttt");
+  const { data, to } = req.body;
+  if (!data || !to) return res.status(400).send("no data sent");
+  console.log("data ");
+  addUserToSocketMap(data);
+  emitEventToUser("user-joined", data.username, to);
+  const chatId = (await getChat(data.username, to)).chatId;
+  res.status(200).send();
 }
 
 export async function sendMessage(req, res, next) {
+  const { message, to } = req.body;
   try {
-    const { message, to } = req.body;
+    console.log("in send message");
+    const pushNotificationResponse = await axios.post(
+      "http://localhost:3004/api/users/sendMessage",
+      { sender: message.sender, reciever: to }
+    );
+    console.log("pushNotificationResponse");
+    if (pushNotificationResponse.status !== 200)
+      throw new Error("user not connected");
     emitEventToUser("new-message", message, to);
+    const timeOfDelivery = new Date();
+    req.messageData = {
+      ...message,
+      timestamp: timeOfDelivery,
+      reciever: to,
+      isSent: true,
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Message sent successfully",
+      timestamp: timeOfDelivery,
+    });
+    await next();
+  } catch (err) {
     req.messageData = {
       ...message,
       reciever: to,
+      isSent: false,
+      isError: true,
     };
+    console.log(req.messageData);
+    res
+      .status(500)
+      .json({ success: false, message: "Message couldn't be sent" });
     return next();
-  } catch (err) {
-    throw err;
   }
 }
 

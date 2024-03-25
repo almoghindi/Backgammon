@@ -91,20 +91,23 @@ export const addUserOrChangeUserStatus = async (req, res, next) => {
   }
 };
 export const getOnlineUser = async (req, res) => {
-  const { username } = req.params;
-  if (!username) {
+  const { sender, reciever } = req.body;
+  if (!reciever) {
     return res.status(400).json({ error: "Missing username" });
   }
 
   try {
-    const onlineUser = await User.findOne({ username });
+    const onlineUser = await User.findOne({
+      username: reciever,
+      isOnline: true,
+    });
     if (!onlineUser) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log(onlineUser);
-    // pushMessage(`${username} sent you a message`, username);
+    console.log("in online user");
+    pushMessage(`${sender} sent you a message`, reciever);
 
-    return res.status(200).json({ socketId: usernameToSocketIdMap[username] });
+    return res.status(200).send();
   } catch (err) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

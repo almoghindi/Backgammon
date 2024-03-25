@@ -55,7 +55,7 @@ export async function sendMessage(req, res, next) {
     );
     if (!pushNotificationResponse.status !== 200)
       throw new Error("user not connected");
-    const recieverSocketId = pushNotificationResponse.username;
+    const recieverSocketId = pushNotificationResponse.socketId;
     emitEventToUser("new-message", message, recieverSocketId);
     req.messageData = {
       ...message,

@@ -29,6 +29,7 @@ interface Props {
 interface SendMessageResponse {
   success: boolean;
   message: string;
+  timeOfDelivery: Date;
 }
 
 export default function ChatWindow(props: Props) {
@@ -42,7 +43,6 @@ export default function ChatWindow(props: Props) {
   const { sendRequest } = useHttpClient();
 
   const addMessage = (message: MessageModel) => {
-    console.log(message);
     setMessages((prev) => [...prev, message]);
   };
 
@@ -70,7 +70,6 @@ export default function ChatWindow(props: Props) {
         { message: messageToSend, to: chatBuddyUsername },
         { authorization: `Bearer ${token}` }
       );
-      console.log(response);
       if (!response.success) {
         setMessages((prevMessages) => {
           return prevMessages.map((msg) => {
@@ -85,7 +84,12 @@ export default function ChatWindow(props: Props) {
       setMessages((prevMessages) => {
         return prevMessages.map((msg) => {
           if (msg.messageId === messageToSend.messageId) {
-            return { ...msg, isError: false, isSent: true };
+            return {
+              ...msg,
+              timestamp: response.timeOfDelivery,
+              isError: false,
+              isSent: true,
+            };
           }
           return msg;
         });
@@ -155,13 +159,17 @@ export default function ChatWindow(props: Props) {
     }
 
     function onMount() {
-      if (!username) return;
-      const data = {
-        username: username,
-        socketId: socket.id === undefined ? "" : socket.id,
-      };
-      // askToEnterChat(data);
-      onConnect(username);
+      try {
+        if (!username) return;
+        const data = {
+          username: username,
+          socketId: socket.id === undefined ? "" : socket.id,
+        };
+        askToEnterChat(data);
+        onConnect(username);
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     onMount();
