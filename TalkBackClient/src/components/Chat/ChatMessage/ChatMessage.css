@@ -9,3 +9,9 @@
 .message-card {
   background-color: #fff;
 }
+
+.error-message {
+  font-size: 11px;
+  color: red;
+  margin: 0 0.5em;
+}

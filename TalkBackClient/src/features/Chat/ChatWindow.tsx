@@ -29,7 +29,7 @@ interface Props {
 interface SendMessageResponse {
   success: boolean;
   message: string;
-  timeOfDelivery: Date;
+  timestamp: Date;
 }
 
 export default function ChatWindow(props: Props) {
@@ -70,23 +70,17 @@ export default function ChatWindow(props: Props) {
         { message: messageToSend, to: chatBuddyUsername },
         { authorization: `Bearer ${token}` }
       );
-      if (!response.success) {
-        setMessages((prevMessages) => {
-          return prevMessages.map((msg) => {
-            if (msg.messageId === messageToSend.messageId) {
-              return { ...msg, isError: true, isSent: false };
-            }
-            return msg;
-          });
-        });
+      console.log(response);
+      if (!response || !response.success) {
         throw new Error(response.message);
       }
       setMessages((prevMessages) => {
         return prevMessages.map((msg) => {
           if (msg.messageId === messageToSend.messageId) {
+            console.log(msg);
             return {
               ...msg,
-              timestamp: response.timeOfDelivery,
+              timestamp: response.timestamp,
               isError: false,
               isSent: true,
             };
@@ -95,6 +89,15 @@ export default function ChatWindow(props: Props) {
         });
       });
     } catch (err) {
+      setMessages((prevMessages) => {
+        return prevMessages.map((msg) => {
+          if (msg.messageId === messageToSend.messageId) {
+            return { ...msg, isError: true, isSent: false };
+          }
+          return msg;
+        });
+      });
+
       console.error(err);
     }
   };
