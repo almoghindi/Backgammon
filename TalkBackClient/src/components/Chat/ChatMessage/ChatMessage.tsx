@@ -1,6 +1,6 @@
-import { Card, Divider, Typography } from "@mui/material";
+import { Card, Divider, Typography, Button } from "@mui/material";
 import "./ChatMessage.css";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import MessageModel from "../../../types/message.model.tsx";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DoneIcon from "@mui/icons-material/Done";
@@ -13,13 +13,21 @@ interface ChatMessageProps {
 export default function ChatMessage(props: ChatMessageProps) {
   const { sender, content, timestamp, isError, isSent } = props.message;
   const { isSelf } = props;
+  const [showFullMessage, setShowFullMessage] = useState(false);
+
   const formattedTimestamp: Date = useMemo(() => {
-    console.log(timestamp);
     if (typeof timestamp === "string") {
       return new Date(timestamp);
     }
     return timestamp;
   }, [timestamp]);
+
+  const truncatedContent = useMemo(() => {
+    if (content.length > 100) {
+      return `${content.substring(0, 97)}...`;
+    }
+    return content;
+  }, [content]);
 
   return (
     <>
@@ -34,16 +42,38 @@ export default function ChatMessage(props: ChatMessageProps) {
           }}
         >
           <div className="card-header">
-            <Typography ml={1}>{isSelf ? "You" : sender}</Typography>
+            <Typography variant="body1" ml={1}>
+              {isSelf ? "You" : sender}
+            </Typography>
             <Typography mr={1}></Typography>
           </div>
           <Divider></Divider>
           <Typography
             ml={1}
-            style={{ wordWrap: "break-word" }}
+            style={{ wordWrap: "break-word", fontSize: "15px" }}
             height={"fit-content"}
           >
-            {content}
+            {showFullMessage || content.length <= 100
+              ? content
+              : truncatedContent}
+            {content.length > 100 && (
+              <>
+                <br />
+                <Button
+                  color="primary"
+                  sx={{
+                    fontSize: "x-small",
+                    padding: "4px 0",
+                    margin: 0,
+                    textTransform: "none",
+                    minWidth: "auto",
+                  }}
+                  onClick={() => setShowFullMessage(!showFullMessage)}
+                >
+                  {showFullMessage ? "Read Less" : "Read More"}
+                </Button>
+              </>
+            )}
           </Typography>
           {!isError && !isSent && <AccessTimeIcon />}
           {!isError && isSent && (
@@ -56,7 +86,11 @@ export default function ChatMessage(props: ChatMessageProps) {
               }}
             >
               {isSelf && <DoneIcon sx={{ color: "grey", fontSize: "small" }} />}
-              {formattedTimestamp && formattedTimestamp.toLocaleTimeString()}
+              {formattedTimestamp &&
+                formattedTimestamp.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
             </div>
           )}
           {isError && <p className="error-message">Message not sent!</p>}

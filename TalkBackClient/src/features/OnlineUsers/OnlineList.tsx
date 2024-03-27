@@ -32,7 +32,6 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
             username,
           }))
           .filter((user) => user.userId !== auth.userId); // Filter out the current user
-        console.log(usersArray);
         setOnlineUsers(usersArray);
       }
     } catch (err) {
