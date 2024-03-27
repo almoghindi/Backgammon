@@ -4,28 +4,94 @@ export const usernameToSocketIdMap = {};
 
 export const openGames = {};
 
-export async function startGame(req, res, next) {
-  const { sender, to } = req.body;
-  if (!sender || !to) return res.status(404).send("Missing body");
-}
-
 export async function userJoin(req, res, next) {
   try {
-    console.log(req.body);
     const { username, opponent, socketId } = req.body;
     if (!username || !opponent || socketId === "")
       return res.status(404).send("Bad request");
     const gameId = getGameId(username, opponent);
-    console.log(gameId);
     openGames[gameId] = { firstPlayer: "" };
     usernameToSocketIdMap[username] = socketId;
-    console.log(usernameToSocketIdMap);
     if (!usernameToSocketIdMap[opponent]) return res.status(200);
-    console.log("usernameToSocketIdMap");
+
     socketEmit("user-connection", "", usernameToSocketIdMap[opponent]);
-    res.status(200).send();
+    res.status(200).send({ success: true });
   } catch (err) {
     res.status(500).send("Internal server error");
+  }
+}
+
+function areUsersConnected(username, opponent) {
+  return (
+    username &&
+    opponent &&
+    usernameToSocketIdMap[username] &&
+    usernameToSocketIdMap[opponent]
+  );
+}
+
+export async function startGame(req, res, next) {
+  try {
+    const { gameObject, username, opponent } = req.body;
+    if (!gameObject) {
+      console.log("no game");
+      return res.status(404).send("one or more fields is invalid");
+    }
+    if (!areUsersConnected(username, opponent)) {
+      return res.status(404).send("username or opponent not connected");
+    }
+    socketEmit(
+      "opponent-started-game",
+      gameObject,
+      usernameToSocketIdMap[opponent]
+    );
+    return res.sendStatus(200);
+  } catch (err) {
+    return res.status(500).send("internal server error");
+  }
+}
+
+export async function select(req, res, next) {
+  try {
+    const { json, username, opponent } = req.body;
+    if (!json) return res.status(404).send("one or more fields is invalid");
+    if (!areUsersConnected(username, opponent))
+      return res.status(404).send("username or opponent not connected");
+    socketEmit("opponent-select", json, usernameToSocketIdMap[opponent]);
+    return res.sendStatus(200);
+  } catch (err) {
+    return res.status(500).send("Internal server error");
+  }
+}
+
+export async function notifyChangeTurn(req, res, next) {
+  try {
+    const { message, username, opponent } = req.body;
+    if (!message) return res.status(404).send("one or more fields is invalid");
+    if (!areUsersConnected(username, opponent))
+      return res.status(404).send("username or opponent not connected");
+    socketEmit("changed-turn", message, usernameToSocketIdMap[opponent]);
+    return res.sendStatus(200);
+  } catch (err) {
+    return res.status(500).send("Internal server error");
+  }
+}
+
+export async function rollDice(req, res, next) {
+  try {
+    console.log(req.body);
+    const { turnJson, username, opponent } = req.body;
+    if (!turnJson) {
+      console.log("wat");
+      return res.status(404).send("one or more fields is invalid");
+    }
+    if (!areUsersConnected(username, opponent)) {
+      return res.status(404).send("username or opponent not connected");
+    }
+    socketEmit("user-rolled-dice", turnJson, usernameToSocketIdMap[opponent]);
+    return res.status(200);
+  } catch (err) {
+    return res.status(500).send("Internal server error");
   }
 }
 
@@ -33,7 +99,6 @@ export async function getFirstPlayer(req, res, next) {
   try {
     const players = req.body.users;
     const gameId = getGameId(players[0], players[1]);
-    console.log(gameId);
     if (openGames[gameId].firstPlayer !== "") {
       return res.status(200).json({ result: openGames[gameId].firstPlayer });
     }
@@ -46,19 +111,12 @@ export async function getFirstPlayer(req, res, next) {
     }
     const chance = Math.floor(Math.random() * 100);
     const result = chance > 50 ? players[0] : players[1];
-    console.log(result);
     setFirstPlayer(gameId, result);
     return res.status(200).json({ result });
   } catch (err) {
     console.log(err);
     return res.status(500).send("Internal server error");
   }
-}
-
-function parseUsersParam(usersParam) {
-  if (!usersParam) throw new Error("No params provided");
-  const [username, opponent] = usersParam.split(",");
-  return { username, opponent };
 }
 
 export function existsInUsernameToSocketIdMap(username) {

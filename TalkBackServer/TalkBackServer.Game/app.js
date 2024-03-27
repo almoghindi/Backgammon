@@ -29,27 +29,30 @@ export const io = new Server(socketServer, {
 app.use("/api/game", gameRoutes);
 
 export function socketEmit(eventName, data, to) {
-  console.log(to);
+  console.log("Emitting: " + eventName);
   io.to(to).emit(eventName, data);
 }
 
 io.on("connection", (socket) => {
-  socket.on("dice-roll", (turn) => {
-    socket.broadcast.emit("user-rolled-dice", turn);
-  });
-  socket.on("user-selected", (index) => {
-    socket.broadcast.emit("oponent-select", index);
-  });
-  socket.on("game-start", (gameOBJECT) => {
-    socket.broadcast.emit("oponent-started-game", gameOBJECT);
-  });
-  socket.on("notify-changed-turn", (messageJSON) => {
-    socket.broadcast.emit("changed-turn", messageJSON);
-  });
-  // socket.on("disconnect", () => {
-  //   console.log(socket.id + " disconnected");
-  //   socket.broadcast.emit("user-disconnected");
+  // socket.on("dice-roll", (turn) => {
+  //   socket.broadcast.emit("user-rolled-dice", turn);
   // });
+  // socket.on("user-selected", (json) => {
+  //   socket.broadcast.emit("opponent-select", json);
+  // });
+  // socket.on("game-start", (gameOBJECT) => {
+  //   socket.broadcast.emit("oponent-started-game", gameOBJECT);
+  // });
+  // socket.on("notify-changed-turn", (messageJSON) => {
+  //   socket.broadcast.emit("changed-turn", messageJSON);
+  // });
+  socket.on("disconnect", () => {
+    console.log("disconnection");
+  });
+});
+
+io.on("disconnection", () => {
+  console.log("disconnected io");
 });
 
 io.listen(process.env.GAME_SOCKET_PORT || 4003);
