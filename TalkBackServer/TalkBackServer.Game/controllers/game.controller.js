@@ -1,14 +1,32 @@
-import {
-  existsInUsernameToSocketIdMap,
-  socketEmit,
-  setFirstPlayer,
-  getGameId,
-  openGames,
-} from "../app.js";
+import { socketEmit } from "../app.js";
+
+export const usernameToSocketIdMap = {};
+
+export const openGames = {};
 
 export async function startGame(req, res, next) {
   const { sender, to } = req.body;
   if (!sender || !to) return res.status(404).send("Missing body");
+}
+
+export async function userJoin(req, res, next) {
+  try {
+    console.log(req.body);
+    const { username, opponent, socketId } = req.body;
+    if (!username || !opponent || socketId === "")
+      return res.status(404).send("Bad request");
+    const gameId = getGameId(username, opponent);
+    console.log(gameId);
+    openGames[gameId] = { firstPlayer: "" };
+    usernameToSocketIdMap[username] = socketId;
+    console.log(usernameToSocketIdMap);
+    if (!usernameToSocketIdMap[opponent]) return res.status(200);
+    console.log("usernameToSocketIdMap");
+    socketEmit("user-connection", "", usernameToSocketIdMap[opponent]);
+    res.status(200).send();
+  } catch (err) {
+    res.status(500).send("Internal server error");
+  }
 }
 
 export async function getFirstPlayer(req, res, next) {
@@ -41,4 +59,16 @@ function parseUsersParam(usersParam) {
   if (!usersParam) throw new Error("No params provided");
   const [username, opponent] = usersParam.split(",");
   return { username, opponent };
+}
+
+export function existsInUsernameToSocketIdMap(username) {
+  const arr = Object.keys(usernameToSocketIdMap);
+  return arr.includes(username);
+}
+
+export function getGameId(username, opponent) {
+  return `${username}&${opponent}`.split("").sort().join("");
+}
+export function setFirstPlayer(gameId, playername) {
+  openGames[gameId].firstPlayer = playername;
 }

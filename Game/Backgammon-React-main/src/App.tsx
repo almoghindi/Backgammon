@@ -23,6 +23,7 @@ import {
   celebrateGameEnd,
   handleUserLeftGameEnd,
 } from "./logic/events/end-game";
+import { getStartingPlayer, joinGame } from "./http/requests";
 
 export const toastStyle = (thisTurn: ThisTurn) => {
   return {
@@ -70,39 +71,17 @@ function App() {
     return [username, opponent];
   }, [users]);
 
-  const getStartingPlayer = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:3003/api/game/get-first-player`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            users: [username, opponent],
-          }),
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw new Error();
-      const data = await response.json();
-      return data.result;
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   async function startGame() {
     const tempGame = Game.new();
     tempGame._gameOn = true;
     setGame(tempGame);
 
     const tempThisTurn = startingGame(game);
-    const startingUser = await getStartingPlayer();
-    console.log(startingUser);
-    console.log(username);
+    const startingUser = await getStartingPlayer(username, opponent);
+
     const isStarting = startingUser === username;
     setIsStartingPlayer(isStarting);
+
     let turn;
     if (isStarting) {
       setPlayer(tempThisTurn._turnPlayer._name);
@@ -139,7 +118,7 @@ function App() {
       [],
       false
     );
-    console.log(isStarting);
+    
     setIsStartingPlayer(isStarting);
     const toastmessageJSON = JSON.stringify({
       message:
@@ -148,6 +127,7 @@ function App() {
           : "Game starts with ⚪ WHITE ⚪",
       turn,
     });
+    
     toastMessage(toastmessageJSON);
     setPlayer(turn._opponentPlayer._name);
     setGame(game);
@@ -183,13 +163,17 @@ function App() {
   }
 
   async function handleUserJoined() {
+    console.log("userjoined");
     setIsWaitingForOpponent(false);
     const gameObj: GameObjectModel = await startGame();
     socket.emit("game-start", gameObj);
   }
 
   useEffect(() => {
-    socket.emit("user-joined", { username, opponent });
+    joinGame(username, opponent, socket.id);
+  }, [socket.id]);
+
+  useEffect(() => {
     socket.on("user-connection", handleUserJoined);
     socket.on("user-rolled-dice", handleDiceRoll);
     socket.on("oponent-select", handleOponentSelect);
