@@ -14,7 +14,7 @@ export default function SlidingChatPanel(props: Props) {
 
   return (
     <SlidingPane
-      width="30%"
+      width="40%"
       className="sliding-pane"
       isOpen={isOpen}
       title="Chat"

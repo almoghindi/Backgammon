@@ -1,22 +1,15 @@
 import express from "express";
 import { auth } from "../middlewares/auth.js";
 import {
-  // addOnlineUser,
-  // getOnlineUsers,
-  getOfflineUsers,
+  addOnlineUser,
   getOnlineUsers,
-  addUserOrChangeUserStatus,
-  getOnlineUser,
+  getExistByUsername,
 } from "../controllers/online-users.controller.js";
 
 const router = express.Router();
 
-// router.get("/", auth, getOnlineUsers);
-// router.post("/", auth, addOnlineUser);
-
-router.get("/online", getOnlineUsers);
-router.get("/offline", auth, getOfflineUsers);
-router.post("/changeStatus", addUserOrChangeUserStatus);
-router.post("/sendMessage", getOnlineUser);
+router.get("/", getOnlineUsers);
+router.post("/", addOnlineUser);
+router.get("/get-online-user/:username", getExistByUsername);
 
 export default router;

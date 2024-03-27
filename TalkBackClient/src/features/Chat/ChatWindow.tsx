@@ -7,7 +7,6 @@ import ChatInput from "../../components/Chat/ChatInput/ChatInput.tsx";
 import MessageModel from "../../types/message.model.tsx";
 import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
 import { useHttpClient } from "../../hooks/useHttp.tsx";
-import CloseIcon from "@mui/icons-material/Close";
 import { v4 as uuidv4 } from "uuid";
 import "./ChatWindow.css";
 
@@ -29,14 +28,13 @@ interface Props {
 interface SendMessageResponse {
   success: boolean;
   message: string;
-  timeOfDelivery: Date;
+  timestamp: Date;
 }
 
 export default function ChatWindow(props: Props) {
-  const { chatBuddyUsername, onCloseWindow } = props;
+  const { chatBuddyUsername } = props;
   const [messages, setMessages] = useState<MessageModel[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [chatId, setChatId] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(true);
   const auth = useContext(AuthContext);
   const { username, token } = auth;
@@ -70,15 +68,8 @@ export default function ChatWindow(props: Props) {
         { message: messageToSend, to: chatBuddyUsername },
         { authorization: `Bearer ${token}` }
       );
-      if (!response.success) {
-        setMessages((prevMessages) => {
-          return prevMessages.map((msg) => {
-            if (msg.messageId === messageToSend.messageId) {
-              return { ...msg, isError: true, isSent: false };
-            }
-            return msg;
-          });
-        });
+      console.log(response);
+      if (!response || !response.success) {
         throw new Error(response.message);
       }
       setMessages((prevMessages) => {
@@ -86,7 +77,7 @@ export default function ChatWindow(props: Props) {
           if (msg.messageId === messageToSend.messageId) {
             return {
               ...msg,
-              timestamp: response.timeOfDelivery,
+              timestamp: response.timestamp,
               isError: false,
               isSent: true,
             };
@@ -95,28 +86,18 @@ export default function ChatWindow(props: Props) {
         });
       });
     } catch (err) {
+      setMessages((prevMessages) => {
+        return prevMessages.map((msg) => {
+          if (msg.messageId === messageToSend.messageId) {
+            return { ...msg, isError: true, isSent: false };
+          }
+          return msg;
+        });
+      });
+
       console.error(err);
     }
   };
-
-  const leaveChat = useCallback(async () => {
-    try {
-      const response = await sendRequest(
-        `http://localhost:3002/api/chat/leave-chat`,
-        "POST",
-        { sender: username, to: chatBuddyUsername },
-        { authorization: `Bearer ${token}` }
-      );
-      if (!response) throw new Error("leave chat failed");
-    } catch (err) {
-      console.error(err);
-    }
-  }, [chatBuddyUsername, username, token]);
-
-  const onLeaveChat = useCallback(async () => {
-    leaveChat();
-    onCloseWindow(chatBuddyUsername);
-  }, [chatBuddyUsername, leaveChat, onCloseWindow]);
 
   const askToEnterChat = useCallback(
     async (data: UserData) => {
@@ -144,7 +125,6 @@ export default function ChatWindow(props: Props) {
         { authorization: `Bearer ${token}` }
       );
       if (!response) throw new Error("fetch failed");
-      setChatId(response.chatId);
       setMessages(response.messages);
       setIsLoadingMessages(false);
     } catch (err) {
@@ -186,9 +166,6 @@ export default function ChatWindow(props: Props) {
       {isLoadingMessages && <LoadingSpinner />}
       <div className="chat-window-header">
         <Typography>Chat with: {chatBuddyUsername}</Typography>
-        <button className="close-btn" onClick={onLeaveChat}>
-          <CloseIcon />
-        </button>
       </div>
       <Divider />
       <ChatMessagesBlock

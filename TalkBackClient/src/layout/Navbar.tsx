@@ -6,18 +6,20 @@ import { AuthContext } from "../context/auth-context";
 import logo from "../assets/logo.png";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { onlineUsersSocket as socket } from "../utils/socketConnection";
-import { OnlineUsersContext } from "../context/online-users-context";
 
 const NavBar: React.FC = () => {
-  const { isLoading } = useHttpClient();
+  const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
-  const { removeOnlineUser } = useContext(OnlineUsersContext);
+
   const handleLogout = async () => {
     try {
-      removeOnlineUser(auth.userId, auth.username);
+      await sendRequest(`http://localhost:3004/api/users/offline`, "POST", {
+        userId: auth.userId,
+        username: auth.username,
+      });
       localStorage.setItem("userName", auth.username);
-      socket.emit("user-logged-out", auth.username);
       auth.logout();
+      socket.emit("user-logged-out", auth.username);
     } catch (error) {
       console.error("Logout failed", error);
     }

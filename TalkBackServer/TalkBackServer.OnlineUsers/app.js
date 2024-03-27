@@ -5,7 +5,7 @@ import http from "http";
 import dotenv from "dotenv";
 dotenv.config();
 
-// import OfflineUsersRoutes from "./routes/offline-users.routes.js";
+import OfflineUsersRoutes from "./routes/offline-users.routes.js";
 import OnlineUsersRoutes from "./routes/online-users.routes.js";
 import initializeOnlineWebSocket, {
   usernameToSocketIdMap,
@@ -18,10 +18,10 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// app.use("/api/users/offline", OfflineUsersRoutes);
-// app.use("/api/users/online", OnlineUsersRoutes);
+app.use("/api/users/offline", OfflineUsersRoutes);
+app.use("/api/users/online", OnlineUsersRoutes);
 
-app.use("/api/users", OnlineUsersRoutes);
+// app.use("/api/users", OnlineUsersRoutes);
 
 const io = initializeOnlineWebSocket(server);
 

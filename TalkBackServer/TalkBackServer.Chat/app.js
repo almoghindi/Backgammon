@@ -23,17 +23,11 @@ export const io = new Server(socketServer, {
 });
 
 export function emitEventToUser(eventName, message, to) {
-  console.log("asdasdgfdfgfdsfg");
-  console.log(usernameToSocketIdMap);
-  console.log(to);
-  console.log(usernameToSocketIdMap[to]);
   io.to(usernameToSocketIdMap[to]).emit(eventName, message);
 }
 export const addUserToSocketMap = ({ username, socketId }) => {
   usernameToSocketIdMap[username] = socketId;
 };
-
-io.on("connection", (socket) => {});
 
 app.use("/api/chat", ChatRoutes);
 

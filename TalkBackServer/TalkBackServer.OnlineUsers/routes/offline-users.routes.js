@@ -7,7 +7,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", auth, getOfflineUsers);
-router.post("/", auth, postOfflineUser);
+router.get("/", getOfflineUsers);
+router.post("/", postOfflineUser);
 
 export default router;
