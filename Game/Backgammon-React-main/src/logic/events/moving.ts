@@ -31,7 +31,7 @@ export function movingPiece(
       thisTurn._turnPlayer._outBar.pop() as string
     );
 
-    thisTurn.turnPlayer.name === game._whitePlayer._name
+    thisTurn._turnPlayer._name === game._whitePlayer._name
       ? (game._whitePlayer = thisTurn._turnPlayer)
       : (game._blackPlayer = thisTurn._turnPlayer);
 

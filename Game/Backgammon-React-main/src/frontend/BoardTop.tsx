@@ -61,11 +61,11 @@ export default function BoardTop(props: BoardProps) {
         onClick={() => props.select(props.barIdx)}
         key={props.barIdx}
         fill={
-          (props.thisMove._canGoTo.includes(props.barIdx) && "#671010") ||
-          (props.barIdx % 2 === 0 && props.barIdx > 11 && "#232937") ||
-          (props.barIdx % 2 !== 0 && props.barIdx <= 11 && "#232937") ||
-          (props.barIdx % 2 === 0 && props.barIdx <= 11 && "#e0ded7") ||
-          (props.barIdx % 2 !== 0 && props.barIdx > 11 && "#e0ded7") ||
+          (props.thisMove._canGoTo.includes(props.barIdx) && "#90ee90  ") ||
+          (props.barIdx % 2 === 0 && props.barIdx > 11 && "#671010") ||
+          (props.barIdx % 2 !== 0 && props.barIdx <= 11 && "#671010") ||
+          (props.barIdx % 2 === 0 && props.barIdx <= 11 && "#231917") ||
+          (props.barIdx % 2 !== 0 && props.barIdx > 11 && "#231917") ||
           "Red"
         }
       >

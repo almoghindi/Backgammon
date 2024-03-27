@@ -36,7 +36,6 @@ export function backgammon() {
 
 export function startingGame(game: Game): ThisTurn {
   var thisTurn: ThisTurn;
-
   while (true) {
     const [whiteFirst, whiteSecond] = dice();
     const [blackFirst, blackSecond] = dice();

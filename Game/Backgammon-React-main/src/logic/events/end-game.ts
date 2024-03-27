@@ -33,3 +33,10 @@ export function celebrateGameEnd(thisTurn: ThisTurn): void {
     toastStyle(thisTurn)
   );
 }
+
+export function handleUserLeftGameEnd(thisTurn: ThisTurn) {
+  toast(
+    `${thisTurn._opponentPlayer._name} Left! You have Won the Game!`,
+    toastStyle(thisTurn)
+  );
+}

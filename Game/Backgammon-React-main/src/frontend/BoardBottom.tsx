@@ -3,6 +3,7 @@ import Player from "../logic/models/player";
 import ThisMove from "../logic/models/this-move";
 import OutBar from "./components/OutBar";
 import Piece from "./components/Piece";
+import { useMemo } from "react";
 
 interface BoardProps {
   game: Game;
@@ -10,9 +11,16 @@ interface BoardProps {
   rollDice: any;
   startGame: any;
   select: any;
+  canPlay: boolean;
+  isSelecting: boolean;
 }
 
 export default function BoardBottom(props: BoardProps) {
+  const allowRoll = useMemo(() => {
+    console.log(props);
+    return props.canPlay && !props.isSelecting;
+  }, [props.isSelecting, props.canPlay]);
+
   return (
     <div className="board-bottom">
       <CreateOutBar
@@ -35,7 +43,11 @@ export default function BoardBottom(props: BoardProps) {
 
   function CreateButton() {
     return props.game._gameOn ? (
-      <button onClick={props.rollDice}>🎲 roll Dice 🎲</button>
+      allowRoll ? (
+        <button onClick={props.rollDice}>🎲 roll Dice 🎲</button>
+      ) : (
+        <></>
+      )
     ) : (
       <button onClick={props.startGame}>⚪ Begin Game ⚫</button>
     );
