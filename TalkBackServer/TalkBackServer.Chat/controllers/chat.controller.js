@@ -45,12 +45,6 @@ export async function enterChat(req, res, next) {
 export async function sendMessage(req, res, next) {
   const { message, to } = req.body;
   try {
-    console.log("in send message");
-    console.log("To - " + to);
-    console.log(
-      "To url - " +
-        `http://localhost:3004/api/users/online/get-online-user/${to}`
-    );
     const pushNotificationResponse = await axios.get(
       `http://localhost:3004/api/users/online/get-online-user/${to}`
     );
@@ -58,7 +52,6 @@ export async function sendMessage(req, res, next) {
       throw new Error("user not connected");
     }
     emitEventToUser("new-message", message, to);
-    console.log("pushNotificationResponse");
     const timeOfDelivery = new Date();
     req.messageData = {
       ...message,

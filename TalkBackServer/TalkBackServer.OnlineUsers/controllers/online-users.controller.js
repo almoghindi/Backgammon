@@ -1,4 +1,4 @@
-import { pushMessage } from "../app.js";
+import { pushMessage, pushGameInvite } from "../app.js";
 import redisClient from "../utils/redis.js";
 import { deleteOfflineUser } from "./offline-users.controller.js";
 export const getOnlineUsers = async (req, res, next) => {
@@ -68,12 +68,9 @@ export const getExistByUsername = async (req, res) => {
     if (!req.params.username) {
       return res.status(400).json({ error: "Missing username" });
     }
-    const onlineUsers = await redisClient.hGetAll("online-users");
 
-    if (!onlineUsers) {
-      return res.status(401).json({ error: "No online users to show" });
-    }
-    if (!Object.values(onlineUsers).includes(req.params.username)) {
+    const exists = await isExistByUsername(req.params.username);
+    if (!exists) {
       return res.status(404).json({ error: "User not found" });
     }
 
@@ -85,6 +82,32 @@ export const getExistByUsername = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
+};
+
+export const gameInvite = async (req, res) => {
+  const { from, to } = req.body;
+  try {
+    if (!to || !from) {
+      return res.status(400).json({ error: "Missing username" });
+    }
+    const exists = await isExistByUsername(to);
+    if (!exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    pushGameInvite(from, to);
+    return res.status(200).json({ message: "User found" });
+  } catch (err) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const isExistByUsername = async (username) => {
+  const onlineUsers = await redisClient.hGetAll("online-users");
+  if (!onlineUsers) {
+    return false;
+  }
+  return Object.values(onlineUsers).includes(username);
 };
 
 // export const getOnlineUsers = async (req, res, next) => {

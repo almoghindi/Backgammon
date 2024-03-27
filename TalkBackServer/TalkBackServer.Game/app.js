@@ -18,15 +18,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const sockets = [];
+app.use("/api/game", gameRoutes);
+
 const socketServer = createServer(app);
+
 export const io = new Server(socketServer, {
   cors: {
     origin: "*",
   },
 });
-
-app.use("/api/game", gameRoutes);
 
 export function socketEmit(eventName, data, to) {
   console.log(to);

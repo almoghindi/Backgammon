@@ -29,6 +29,11 @@ export const pushMessage = (message, to) => {
   io.to(usernameToSocketIdMap[to]).emit("push-message", message);
 };
 
+export const pushGameInvite = (from, to) => {
+  console.log(to);
+  io.to(usernameToSocketIdMap[to]).emit("game-invite", from);
+};
+
 app.use((req, res, next) => {
   const error = new Error("Could not find this route.");
   error.status = 404;

@@ -7,16 +7,40 @@ import SlidingChatPanel from "../Chat/SlidingChat/SlidingChat";
 import { AuthContext } from "../../context/auth-context";
 import { OnlineUser as OnlineUserInterface } from "../../types/OnlineUser";
 import { NotificationProps } from "../../types/Notification";
+import GameInvited from "./GameInvited";
+import { onlineUsersSocket } from "../../utils/socketConnection";
+
 import "./OnlineList.css";
 
 const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUserInterface[]>([]);
+  useState<boolean>(false);
+  const [openGameInvitedModal, setOpenGameInvitedModal] = useState(false);
+  const [fromUsername, setFromUsername] = useState<string>("");
   const { sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
+
+  const openGameInvited = () => {
+    setOpenGameInvitedModal(true);
+  };
+
+  const closeGameInvited = () => setOpenGameInvitedModal(false);
 
   useEffect(() => {
     fetchOnlineUsers();
   }, [notification]);
+
+  useEffect(() => {
+    console.log("hello");
+    onlineUsersSocket.on("game-invite", (from) => {
+      openGameInvited();
+      setFromUsername(from);
+    });
+
+    return () => {
+      onlineUsersSocket.off("game-invite");
+    };
+  }, []);
 
   const fetchOnlineUsers = async () => {
     try {
@@ -72,7 +96,6 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
               onChat={() => {
                 openChat(user.username);
               }}
-              onPlay={() => {}}
             />
           ))}
       </List>
@@ -90,6 +113,11 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
             />
           </div>
         ))} */}
+      <GameInvited
+        open={openGameInvitedModal}
+        onClose={closeGameInvited}
+        username={fromUsername}
+      />
     </>
   );
 };
