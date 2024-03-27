@@ -17,7 +17,6 @@ interface BoardProps {
 
 export default function BoardBottom(props: BoardProps) {
   const allowRoll = useMemo(() => {
-    console.log(props);
     return props.canPlay && !props.isSelecting;
   }, [props.isSelecting, props.canPlay]);
 

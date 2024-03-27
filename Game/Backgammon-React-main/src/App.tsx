@@ -23,7 +23,16 @@ import {
   celebrateGameEnd,
   handleUserLeftGameEnd,
 } from "./logic/events/end-game";
-import { getStartingPlayer, joinGame } from "./http/requests";
+import {
+  getStartingPlayer,
+  joinGame,
+  notifyChangeTurn,
+  requestRollDice,
+  requestStartGame,
+  requestUserSelect,
+} from "./http/requests";
+import { useHttpClient } from "./http/useHttp";
+import LoadingSpinner from "./frontend/components/loading/LoadingSpinner";
 
 export const toastStyle = (thisTurn: ThisTurn) => {
   return {
@@ -56,6 +65,7 @@ function App() {
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const [isStartingPlayer, setIsStartingPlayer] = useState(false);
   const [timer, setTimer] = useTimer();
+  const [isLoading, setIsLoading] = useState(false);
 
   // window.onload = () => backgammon();
 
@@ -108,9 +118,9 @@ function App() {
     return result;
   }
 
-  function oponentStartedGame(gameOBJECT: GameObjectModel) {
+  function oponentStartedGame(gameJson: string) {
     setIsWaitingForOpponent(false);
-    const result = gameOBJECT;
+    const result = JSON.parse(gameJson);
     const { game, turn, move, isStarting } = result;
     const newTurn = new ThisTurn(
       turn._opponentPlayer,
@@ -118,26 +128,26 @@ function App() {
       [],
       false
     );
-    
+
     setIsStartingPlayer(isStarting);
-    const toastmessageJSON = JSON.stringify({
-      message:
-        turn._opponentPlayer._name === "Black"
-          ? "Game starts with ⚫ BLACK ⚫"
-          : "Game starts with ⚪ WHITE ⚪",
-      turn,
-    });
-    
-    toastMessage(toastmessageJSON);
+
     setPlayer(turn._opponentPlayer._name);
     setGame(game);
     setThisTurn(newTurn);
     setThisMove(move);
+    const toastmessageJSON = JSON.stringify({
+      message: isStarting
+        ? `You start!`
+        : `Game starts with ${newTurn._opponentPlayer._name}`,
+      turn: newTurn,
+    });
+    toastMessage(toastmessageJSON);
   }
 
   async function handleUserStartedGame() {
     const gameObj: GameObjectModel = await startGame();
-    socket.emit("game-start", gameObj);
+
+    await requestStartGame(username, opponent, JSON.stringify(gameObj));
   }
 
   function oponentRolledDice(turn: ThisTurn) {
@@ -163,10 +173,9 @@ function App() {
   }
 
   async function handleUserJoined() {
-    console.log("userjoined");
     setIsWaitingForOpponent(false);
     const gameObj: GameObjectModel = await startGame();
-    socket.emit("game-start", gameObj);
+    await requestStartGame(username, opponent, JSON.stringify(gameObj));
   }
 
   useEffect(() => {
@@ -176,16 +185,16 @@ function App() {
   useEffect(() => {
     socket.on("user-connection", handleUserJoined);
     socket.on("user-rolled-dice", handleDiceRoll);
-    socket.on("oponent-select", handleOponentSelect);
-    socket.on("oponent-started-game", oponentStartedGame);
+    socket.on("opponent-select", handleOponentSelect);
+    socket.on("opponent-started-game", oponentStartedGame);
     socket.on("changed-turn", toastMessage);
     socket.on("game-over", toastMessage);
     socket.on("user-disconnected", handleOpponentLeft);
     return () => {
       socket.off("user-connection", handleUserStartedGame);
       socket.off("user-rolled-dice", handleDiceRoll);
-      socket.off("oponent-select", handleOponentSelect);
-      socket.off("oponent-started-game", oponentStartedGame);
+      socket.off("opponent-select", handleOponentSelect);
+      socket.off("opponent-started-game", oponentStartedGame);
       socket.off("changed-turn", toastMessage);
       socket.off("game-over", toastMessage);
       socket.off("user-disconnected", handleOpponentLeft);
@@ -205,7 +214,7 @@ function App() {
     if (returnedThisTurn._rolledDice)
       returnedThisTurn = checkCantMove(game, returnedThisTurn);
 
-    socket.emit("dice-roll", JSON.stringify(returnedThisTurn));
+    requestRollDice(username, opponent, JSON.stringify(returnedThisTurn));
     setThisTurn(returnedThisTurn);
   }
 
@@ -228,7 +237,7 @@ function App() {
     const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
     const toastMessage = JSON.stringify({ message, turn: thisTurn });
     setThisTurn(newTurn);
-    socket.emit("notify-changed-turn", toastMessage);
+    notifyChangeTurn(username, opponent, toastMessage);
   }
 
   useEffect(() => {
@@ -248,7 +257,7 @@ function App() {
     setGame(game);
   }
 
-  function handleUserSelect(index: number | string) {
+  async function handleUserSelect(index: number | string) {
     setIsStartingPlayer(true);
     if (!canPlay) return;
     setIsSelecting(true);
@@ -262,7 +271,7 @@ function App() {
       setIsSelecting(false);
       const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
       const toastMessage = JSON.stringify({ message, turn: returnedThisTurn });
-      socket.emit("notify-changed-turn", toastMessage);
+      notifyChangeTurn(username, opponent, toastMessage);
     }
     if (!returnedThisTurn._rolledDice) {
       setIsSelecting(false);
@@ -272,8 +281,16 @@ function App() {
       turn: returnedThisTurn,
       move: returnedThisMove,
     });
+    setIsLoading(true);
+    const selected = await requestUserSelect(username, opponent, gameJSON);
+    if (!selected) {
+      toast.error("Network failed, try again");
+      setIsLoading(false);
+      return;
+    };
     select(gameJSON);
-    socket.emit("user-selected", gameJSON);
+    setIsLoading(false);
+    // socket.emit("user-selected", gameJSON);
   }
 
   function handleOponentSelect(json: string) {
@@ -281,6 +298,7 @@ function App() {
   }
   return (
     <>
+      {isLoading && <LoadingSpinner />}
       {isWaitingForOpponent && <LoadingPage />}
       {!isWaitingForOpponent && (
         <div>
