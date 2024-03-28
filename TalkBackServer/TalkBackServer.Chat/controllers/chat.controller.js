@@ -45,14 +45,12 @@ export async function enterChat(req, res, next) {
 export async function sendMessage(req, res, next) {
   const { message, to } = req.body;
   try {
-    console.log("in send message");
-    const pushNotificationResponse = await axios.post(
-      "http://localhost:3004/api/users/sendMessage",
-      { sender: message.sender, reciever: to }
+    const pushNotificationResponse = await axios.get(
+      `http://localhost:3004/api/users/online/get-online-user/${to}`
     );
-    console.log("pushNotificationResponse");
-    if (pushNotificationResponse.status !== 200)
+    if (pushNotificationResponse.status !== 200) {
       throw new Error("user not connected");
+    }
     emitEventToUser("new-message", message, to);
     const timeOfDelivery = new Date();
     req.messageData = {
@@ -61,13 +59,13 @@ export async function sendMessage(req, res, next) {
       reciever: to,
       isSent: true,
     };
+    next();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Message sent successfully",
       timestamp: timeOfDelivery,
     });
-    await next();
   } catch (err) {
     req.messageData = {
       ...message,
@@ -75,11 +73,11 @@ export async function sendMessage(req, res, next) {
       isSent: false,
       isError: true,
     };
+    console.log(err.errors);
     console.log(req.messageData);
-    res
+    return res
       .status(500)
       .json({ success: false, message: "Message couldn't be sent" });
-    return next();
   }
 }
 

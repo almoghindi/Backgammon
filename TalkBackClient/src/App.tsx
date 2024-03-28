@@ -9,13 +9,10 @@ import AuthComponent from "./pages/Auth";
 import HomePage from "./pages/Home";
 import { useAuth } from "./hooks/useAuth";
 import { AuthContext } from "./context/auth-context";
-import { useOnlineUsers } from "./hooks/useOnlineUsers";
-import { OnlineUsersContext } from "./context/online-users-context";
 import ChatTemp from "./features/Chat/ChatTemp";
 
 function App() {
   const { token, login, logout, userId, username } = useAuth();
-  const { onlineUsers, addOnlineUser, removeOnlineUser } = useOnlineUsers();
   return (
     <>
       <AuthContext.Provider
@@ -28,30 +25,22 @@ function App() {
           logout: logout,
         }}
       >
-        <OnlineUsersContext.Provider
-          value={{
-            onlineUsers: onlineUsers,
-            addOnlineUser: addOnlineUser,
-            removeOnlineUser: removeOnlineUser,
-          }}
-        >
-          <Router>
-            <Routes>
-              {!token ? (
-                <>
-                  <Route path="/auth" element={<AuthComponent />} />
-                  <Route path="*" element={<Navigate to="/auth" />} />
-                </>
-              ) : (
-                <>
-                  <Route path="/" element={<HomePage />} />
-                </>
-              )}
-              <Route path="/chatdev" element={<ChatTemp />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </Router>{" "}
-        </OnlineUsersContext.Provider>
+        <Router>
+          <Routes>
+            {!token ? (
+              <>
+                <Route path="/auth" element={<AuthComponent />} />
+                <Route path="*" element={<Navigate to="/auth" />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<HomePage />} />
+              </>
+            )}
+            <Route path="/chatdev" element={<ChatTemp />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Router>{" "}
       </AuthContext.Provider>
     </>
   );

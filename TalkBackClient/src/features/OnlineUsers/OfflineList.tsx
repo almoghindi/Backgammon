@@ -9,7 +9,6 @@ import {
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { OnlineUsersContext } from "../../context/online-users-context";
 import { AuthContext } from "../../context/auth-context";
 import { OnlineUser } from "../../types/OnlineUser";
 import { NotificationProps } from "../../types/Notification";
@@ -17,11 +16,10 @@ import { NotificationProps } from "../../types/Notification";
 const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
   const [offlineUsers, setOfflineUsers] = useState<OnlineUser[]>([]);
   const { isLoading, sendRequest } = useHttpClient();
-  const { onlineUsers } = useContext(OnlineUsersContext);
   const auth = useContext(AuthContext);
   useEffect(() => {
     fetchOfflineUsers();
-  }, [onlineUsers, notification]);
+  }, [notification]);
 
   const fetchOfflineUsers = async () => {
     try {

@@ -5,42 +5,68 @@ import { useHttpClient } from "../../hooks/useHttp";
 import SlidingChatPanel from "../Chat/SlidingChat/SlidingChat";
 // import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
-import { OnlineUsersContext } from "../../context/online-users-context";
 import { OnlineUser as OnlineUserInterface } from "../../types/OnlineUser";
 import { NotificationProps } from "../../types/Notification";
+import GameInvited from "./GameInvited";
+import { onlineUsersSocket } from "../../utils/socketConnection";
+
 import "./OnlineList.css";
 
 const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
-  // const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUserInterface[]>([]);
+  useState<boolean>(false);
+  const [openGameInvitedModal, setOpenGameInvitedModal] = useState(false);
+  const [fromUsername, setFromUsername] = useState<string>("");
   const { sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
-  // useEffect(() => {
-  //   fetchOnlineUsers();
-  // }, [notification]);
 
-  // const fetchOnlineUsers = async () => {
-  //   try {
-  //     const responseData = await sendRequest<{ [key: string]: string }>(
-  //       `http://localhost:3004/api/users/online`
-  //     );
-  //     if (responseData) {
-  //       const usersArray: OnlineUser[] = Object.entries(
-  //         responseData.onlineUsers
-  //       )
-  //         .map(([userId, username]) => ({
-  //           userId,
-  //           username,
-  //         }))
-  //         .filter((user) => user.userId !== auth.userId); // Filter out the current user
-  //       setOnlineUsers(usersArray);
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-  // useEffect(() => {
-  //   setOnlineUsers((prev) => prev.filter((user) => user.userId == auth.userId));
-  // }, [onlineUsers]);
+  const openGameInvited = () => {
+    setOpenGameInvitedModal(true);
+  };
+
+  const closeGameInvited = () => setOpenGameInvitedModal(false);
+
+  useEffect(() => {
+    fetchOnlineUsers();
+  }, [notification]);
+
+  useEffect(() => {
+    console.log("hello");
+    onlineUsersSocket.on("game-invite", (from: string) => {
+      openGameInvited();
+      setFromUsername(from);
+    });
+
+    onlineUsersSocket.on("cancel-invite", () => {
+      closeGameInvited();
+    });
+
+    return () => {
+      onlineUsersSocket.off("game-invite");
+    };
+  }, []);
+
+  const fetchOnlineUsers = async () => {
+    try {
+      const responseData = await sendRequest<{ [key: string]: string }>(
+        `http://localhost:3004/api/users/online`
+      );
+      if (responseData) {
+        const usersArray: OnlineUserInterface[] = Object.entries(
+          responseData.onlineUsers
+        )
+          .map(([userId, username]) => ({
+            userId,
+            username,
+          }))
+          .filter((user) => user.userId !== auth.userId); // Filter out the current user
+        setOnlineUsers(usersArray);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const [openChats, setOpenChats] = useState<string>("");
 
   const handleCloseChat = () => {
@@ -50,54 +76,30 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
     setOpenChats(user);
   };
 
-  const [onlineUsersList, setOnlineUsersList] = useState<OnlineUserInterface[]>(
-    []
-  );
-  const { onlineUsers } = useContext(OnlineUsersContext);
-  useEffect(() => {
-    fetchOnlineUsers();
-  }, [onlineUsers, notification]);
+  // const [activeChats, setActiveChats] = useState<string[]>([]);
 
-  const [activeChats, setActiveChats] = useState<string[]>([]);
+  // function openChatWindow(user: string) {
+  //   if (activeChats.includes(user)) return;
+  //   setActiveChats((prev) => [...prev, user]);
+  // }
 
-  function openChatWindow(user: string) {
-    if (activeChats.includes(user)) return;
-    setActiveChats((prev) => [...prev, user]);
-  }
-
-  function closeChatWindow(user: string) {
-    setActiveChats((prev) => prev.filter((u) => u !== user));
-  }
-
-  const fetchOnlineUsers = async () => {
-    try {
-      const responseData = await sendRequest<{
-        onlineUsers: OnlineUserInterface[];
-      }>(`http://localhost:3004/api/users/online`);
-
-      setOnlineUsersList(responseData.onlineUsers);
-      setOnlineUsersList((prev) =>
-        (prev || []).filter((user) => user.userId !== auth.userId)
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // function closeChatWindow(user: string) {
+  //   setActiveChats((prev) => prev.filter((u) => u !== user));
+  // }
 
   return (
     <>
       {/* {isLoading && <LoadingSpinner />} */}
       <List sx={{ width: "100%" }} subheader={<li />}>
         <ListSubheader sx={{ zIndex: -1 }}>Online</ListSubheader>
-        {onlineUsersList &&
-          onlineUsersList.map((user) => (
+        {onlineUsers &&
+          onlineUsers.map((user) => (
             <OnlineUser
               key={user.userId}
               username={user.username}
               onChat={() => {
                 openChat(user.username);
               }}
-              onPlay={() => {}}
             />
           ))}
       </List>
@@ -115,6 +117,11 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
             />
           </div>
         ))} */}
+      <GameInvited
+        open={openGameInvitedModal}
+        onClose={closeGameInvited}
+        username={fromUsername}
+      />
     </>
   );
 };

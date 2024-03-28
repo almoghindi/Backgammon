@@ -4,7 +4,6 @@ import { useHttpClient } from "../../hooks/useHttp";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { onlineUsersSocket as socket } from "../../utils/socketConnection";
-import { OnlineUsersContext } from "../../context/online-users-context";
 interface LoginResponse {
   userId: string;
   token: string;
@@ -19,7 +18,6 @@ const LoginPage: React.FC = () => {
 
   const { isLoading, sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
-  const { addOnlineUser } = useContext(OnlineUsersContext);
   useEffect(() => {
     const username: string | null = localStorage.getItem("userName");
     if (username) {
@@ -49,22 +47,21 @@ const LoginPage: React.FC = () => {
           }
         );
 
+        await sendRequest<LoginResponse>(
+          `http://localhost:3004/api/users/online`,
+          "POST",
+          {
+            userId: loginResponseData.userId,
+            username: loginResponseData.username,
+          }
+        );
         auth.login(
           loginResponseData.userId,
           loginResponseData.token,
           loginResponseData.refreshToken,
           loginResponseData.username
         );
-        // await sendRequest<LoginResponse>(
-        //   `http://localhost:3004/api/users/online`,
-        //   "POST",
-        //   {
-        //     userId: loginResponseData.userId,
-        //     username: loginResponseData.username,
-        //   }
-        // );
 
-        addOnlineUser(loginResponseData.userId, loginResponseData.username);
         socket.emit("user-logged-in", username);
       } catch (err) {
         setError("Authentication Failed, please try again.");
