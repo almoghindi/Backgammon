@@ -32,9 +32,13 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
 
   useEffect(() => {
     console.log("hello");
-    onlineUsersSocket.on("game-invite", (from) => {
+    onlineUsersSocket.on("game-invite", (from: string) => {
       openGameInvited();
       setFromUsername(from);
+    });
+
+    onlineUsersSocket.on("cancel-invite", () => {
+      closeGameInvited();
     });
 
     return () => {

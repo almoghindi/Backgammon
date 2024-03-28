@@ -14,7 +14,6 @@ export default function initializeOnlineWebSocket(server) {
 
     socket.on("user-logged-in", (username) => {
       usernameToSocketIdMap[username] = socket.id;
-      console.log(usernameToSocketIdMap);
       socket.broadcast.emit("user-joined", `${username} is online`);
     });
 
@@ -24,6 +23,10 @@ export default function initializeOnlineWebSocket(server) {
 
     socket.on("user-logged-out", (username) => {
       socket.broadcast.emit("user-left", `${username} is offline`);
+    });
+
+    socket.on("invite-canceled", (to) => {
+      io.to(usernameToSocketIdMap[to]).emit("cancel-invite");
     });
 
     socket.on("disconnect", () => {

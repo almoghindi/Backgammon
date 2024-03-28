@@ -11,6 +11,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import GameInviting from "./GameInviting";
 import { useHttpClient } from "../../hooks/useHttp";
 import { AuthContext } from "../../context/auth-context";
+import { onlineUsersSocket } from "../../utils/socketConnection";
 
 interface OnlineUserProps {
   username: string;
@@ -28,7 +29,10 @@ const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
     setOpenGameInvitingModal(true);
   };
 
-  const closeGameInviting = () => setOpenGameInvitingModal(false);
+  const closeGameInviting = () => {
+    setOpenGameInvitingModal(false);
+    onlineUsersSocket.emit("invite-canceled", username);
+  };
 
   const sendGameInviting = async () => {
     try {

@@ -68,7 +68,6 @@ export default function ChatWindow(props: Props) {
         { message: messageToSend, to: chatBuddyUsername },
         { authorization: `Bearer ${token}` }
       );
-      console.log(response);
       if (!response || !response.success) {
         throw new Error(response.message);
       }
