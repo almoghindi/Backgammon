@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   ListItem,
   ListItemText,
@@ -12,7 +12,7 @@ import GameInviting from "./GameInviting";
 import { useHttpClient } from "../../hooks/useHttp";
 import { AuthContext } from "../../context/auth-context";
 import { onlineUsersSocket } from "../../utils/socketConnection";
-
+import Snackbar from "../../components/Snackbar";
 interface OnlineUserProps {
   username: string;
   onChat: () => void;
@@ -21,7 +21,7 @@ interface OnlineUserProps {
 const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
   const { sendRequest } = useHttpClient();
   const [openGameInvitingModal, setOpenGameInvitingModal] = useState(false);
-
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const auth = useContext(AuthContext);
 
   const openGameInviting = () => {
@@ -33,6 +33,23 @@ const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
     setOpenGameInvitingModal(false);
     onlineUsersSocket.emit("invite-canceled", username);
   };
+
+  useEffect(() => {
+    onlineUsersSocket.on("decline-invite", () => {
+      setOpenGameInvitingModal(false);
+      setOpenSnackbar(true);
+    });
+
+    onlineUsersSocket.on("accept-invite",()=>{
+      setOpenGameInvitingModal(false);
+      window.open(`http://localhost:5174/game/${auth.username}&${username}`);
+
+    })
+
+    return () => {
+      onlineUsersSocket.off("decline-invite");
+    };
+  }, []);
 
   const sendGameInviting = async () => {
     try {
@@ -67,6 +84,12 @@ const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
         open={openGameInvitingModal}
         onClose={closeGameInviting}
         username={username}
+      />
+      <Snackbar
+        snackbarOpen={openSnackbar}
+        setSnackbarOpen={setOpenSnackbar}
+        snackbarMessage={`Invite declined by ${username}`}
+        severity="error"
       />
     </>
   );

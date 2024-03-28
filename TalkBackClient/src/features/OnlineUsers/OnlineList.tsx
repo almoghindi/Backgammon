@@ -24,7 +24,16 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
     setOpenGameInvitedModal(true);
   };
 
-  const closeGameInvited = () => setOpenGameInvitedModal(false);
+  const closeGameInvited = () => {
+    setOpenGameInvitedModal(false);
+    onlineUsersSocket.emit("invite-declined", fromUsername);
+  };
+
+  const handleAcceptGame = () => {
+    onlineUsersSocket.emit("invite-accepted", fromUsername);
+    window.open(`http://localhost:5174/game/${auth.username}&${fromUsername}`);
+    setOpenGameInvitedModal(false);
+  };
 
   useEffect(() => {
     fetchOnlineUsers();
@@ -38,11 +47,12 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
     });
 
     onlineUsersSocket.on("cancel-invite", () => {
-      closeGameInvited();
+      setOpenGameInvitedModal(false);
     });
 
     return () => {
       onlineUsersSocket.off("game-invite");
+      onlineUsersSocket.off("cancel-invite");
     };
   }, []);
 
@@ -120,6 +130,7 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
       <GameInvited
         open={openGameInvitedModal}
         onClose={closeGameInvited}
+        onAccept={handleAcceptGame}
         username={fromUsername}
       />
     </>

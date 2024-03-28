@@ -6,6 +6,7 @@ import GameModal from "../../components/Modal";
 interface GameInviteProps {
   open: boolean;
   onClose: () => void;
+  onAccept: () => void;
   username: string;
 }
 
@@ -21,7 +22,11 @@ const GameInviting: React.FC<GameInviteProps> = ({
           You got an invite from {username}!
         </Typography>
         <Box sx={{ mt: 2, display: "flex", justifyContent: "space-around" }}>
-          <Button variant="contained" sx={{ bgcolor: "green" }}>
+          <Button
+            variant="contained"
+            sx={{ bgcolor: "green" }}
+            onClick={onAccept}
+          >
             Accept
           </Button>
           <Button variant="contained" sx={{ bgcolor: "red" }} onClick={onClose}>

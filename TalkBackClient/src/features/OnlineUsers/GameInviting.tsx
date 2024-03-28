@@ -20,6 +20,9 @@ const GameInviting: React.FC<GameInviteProps> = ({
         <Typography sx={{ mt: 2 }}>
           Waiting for {username}'s response...
         </Typography>
+        <Typography sx={{ fontSize: "11px" }}>
+          Clicking outside the popup will cancel the invite
+        </Typography>
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
           <Button onClick={onClose} variant="contained">
             Cancel

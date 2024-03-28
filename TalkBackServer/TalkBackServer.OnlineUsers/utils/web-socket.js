@@ -29,6 +29,14 @@ export default function initializeOnlineWebSocket(server) {
       io.to(usernameToSocketIdMap[to]).emit("cancel-invite");
     });
 
+    socket.on("invite-declined", (from) => {
+      io.to(usernameToSocketIdMap[from]).emit("decline-invite");
+    });
+
+    socket.on("invite-accepted", (from) => {
+      io.to(usernameToSocketIdMap[from]).emit("accept-invite");
+    });
+
     socket.on("disconnect", () => {
       console.log("User disconnected");
     });
