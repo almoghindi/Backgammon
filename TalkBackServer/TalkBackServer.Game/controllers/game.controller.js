@@ -51,16 +51,54 @@ export async function startGame(req, res, next) {
   }
 }
 
+// export async function select(req, res, next) {
+//   try {
+//     const { json, username, opponent } = req.body;
+//     if (!json) return res.status(404).send("one or more fields is invalid");
+//     if (!areUsersConnected(username, opponent))
+//       return res.status(404).send("username or opponent not connected");
+//     socketEmit("opponent-select", json, usernameToSocketIdMap[opponent]);
+//     return res.sendStatus(200);
+//   } catch (err) {
+//     return res.status(500).send("Internal server error");
+//   }
+// }
+
 export async function select(req, res, next) {
   try {
     const { json, username, opponent } = req.body;
-    if (!json) return res.status(404).send("one or more fields is invalid");
-    if (!areUsersConnected(username, opponent))
-      return res.status(404).send("username or opponent not connected");
+
+    // Check if all required fields are present
+    if (!json || !username || !opponent) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    // Validate JSON format
+    if (typeof json !== "string" || json === null) {
+      return res.status(400).send("Invalid JSON format");
+    }
+
+    // Check if users are connected
+    if (!areUsersConnected(username, opponent)) {
+      return res.status(404).send("Username or opponent not connected");
+    }
+
+    // Emit event to opponent
     socketEmit("opponent-select", json, usernameToSocketIdMap[opponent]);
+
     return res.sendStatus(200);
   } catch (err) {
-    return res.status(500).send("Internal server error");
+    console.error("Error in select function:", err);
+
+    // Handle specific errors
+    if (err instanceof SyntaxError) {
+      return res.status(400).send("Invalid JSON format");
+    } else if (err instanceof TypeError) {
+      return res.status(400).send("Invalid request body");
+    } else {
+      // For unexpected errors, return generic server error
+      return res.status(500).send("Internal server error");
+    }
   }
 }
 
@@ -89,7 +127,7 @@ export async function rollDice(req, res, next) {
       return res.status(404).send("username or opponent not connected");
     }
     socketEmit("user-rolled-dice", turnJson, usernameToSocketIdMap[opponent]);
-    return res.status(200);
+    return res.sendStatus(200);
   } catch (err) {
     return res.status(500).send("Internal server error");
   }

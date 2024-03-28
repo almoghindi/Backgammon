@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import "./App.css";
 import { backgammon, startingGame } from "./logic/events/start-game";
@@ -261,21 +261,17 @@ function App() {
     setIsStartingPlayer(true);
     if (!canPlay) return;
     setIsSelecting(true);
+    const memoizedGame = {
+      newgame: { ...game },
+      turn: { ...thisTurn },
+      move: { ...thisMove },
+    };
     const [returnedGame, returnedThisTurn, returnedThisMove] = selecting(
       index,
       game,
       thisTurn,
       thisMove
     );
-    if (returnedThisTurn._opponentPlayer !== thisTurn._opponentPlayer) {
-      setIsSelecting(false);
-      const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
-      const toastMessage = JSON.stringify({ message, turn: returnedThisTurn });
-      notifyChangeTurn(username, opponent, toastMessage);
-    }
-    if (!returnedThisTurn._rolledDice) {
-      setIsSelecting(false);
-    }
     const gameJSON = JSON.stringify({
       newgame: returnedGame,
       turn: returnedThisTurn,
@@ -284,13 +280,27 @@ function App() {
     setIsLoading(true);
     const selected = await requestUserSelect(username, opponent, gameJSON);
     if (!selected) {
+      debugger;
+      setIsSelecting(false);
+      select(JSON.stringify(memoizedGame));
       toast.error("Network failed, try again");
-      setIsLoading(false);
-      return;
-    };
-    select(gameJSON);
+    } else {
+      if (returnedThisTurn._opponentPlayer !== thisTurn._opponentPlayer) {
+        const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
+        const toastMessage = JSON.stringify({
+          message,
+          turn: returnedThisTurn,
+        });
+        notifyChangeTurn(username, opponent, toastMessage);
+      }
+      if (!returnedThisTurn._rolledDice) {
+        setIsSelecting(false);
+      }
+
+      select(gameJSON);
+      // socket.emit("user-selected", gameJSON);
+    }
     setIsLoading(false);
-    // socket.emit("user-selected", gameJSON);
   }
 
   function handleOponentSelect(json: string) {

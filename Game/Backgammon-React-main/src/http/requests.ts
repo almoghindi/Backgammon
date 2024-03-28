@@ -1,6 +1,6 @@
 import { useHttpClient } from "./useHttp";
 import axios from "axios";
-const AXIOS_TIMEOUT_MS = 3000;
+const AXIOS_TIMEOUT_MS = 5000;
 
 const baseURL = "http://localhost:3003/api/game";
 

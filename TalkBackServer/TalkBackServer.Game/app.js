@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { createServer } from "http";
+import http from "http";
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -18,15 +18,35 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use("/api/game", gameRoutes);
+
+app.use((req, res, next) => {
+  const error = new Error("Could not find this route.");
+  error.status = 404;
+  next(error);
+});
+
+app.use((error, req, res, next) => {
+  console.error(error.stack);
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      console.log(err);
+    });
+  }
+  if (res.headerSent) {
+    return next(error);
+  }
+  res.status(error.status || 500);
+  res.json({ message: error.message || "An unknown error occurred!" });
+});
+
 const sockets = [];
-const socketServer = createServer(app);
+const socketServer = http.createServer(app);
 export const io = new Server(socketServer, {
   cors: {
     origin: "*",
   },
 });
-
-app.use("/api/game", gameRoutes);
 
 export function socketEmit(eventName, data, to) {
   console.log("Emitting: " + eventName);
@@ -51,10 +71,10 @@ io.on("connection", (socket) => {
   });
 });
 
-io.on("disconnection", () => {
+io.on("disconnect", () => {
   console.log("disconnected io");
 });
 
-io.listen(process.env.GAME_SOCKET_PORT || 4003);
+// io.listen(process.env.GAME_SOCKET_PORT || 4003);
 
-app.listen(process.env.GAME_PORT || 3003);
+socketServer.listen(process.env.GAME_PORT || 3003);
