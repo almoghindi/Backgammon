@@ -33,6 +33,7 @@ import {
 } from "./http/requests";
 import { useHttpClient } from "./http/useHttp";
 import LoadingSpinner from "./frontend/components/loading/LoadingSpinner";
+import useGameEvents, { toastMessage } from "./hooks/useGameEvents";
 
 export const toastStyle = (thisTurn: ThisTurn) => {
   return {
@@ -57,22 +58,15 @@ interface GameObjectModel {
 
 function App() {
   const { users } = useParams();
-  const [game, setGame] = useState(Game.new);
-  const [thisTurn, setThisTurn] = useState(ThisTurn.new);
-  const [thisMove, setThisMove] = useState(ThisMove.new);
-  const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(true);
-  const [player, setPlayer] = useState<string>("");
-  const [isSelecting, setIsSelecting] = useState<boolean>(false);
-  const [isStartingPlayer, setIsStartingPlayer] = useState(false);
-  const [timer, setTimer] = useTimer();
-  const [isLoading, setIsLoading] = useState(false);
-
-  // window.onload = () => backgammon();
-
-  const canPlay: boolean = useMemo(() => {
-    return player === thisTurn._turnPlayer._name && isStartingPlayer;
-  }, [thisTurn, player, isStartingPlayer]);
-
+  // const [game, setGame] = useState(Game.new);
+  // const [thisTurn, setThisTurn] = useState(ThisTurn.new);
+  // const [thisMove, setThisMove] = useState(ThisMove.new);
+  // const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(true);
+  // const [player, setPlayer] = useState<string>("");
+  // const [isSelecting, setIsSelecting] = useState<boolean>(false);
+  // const [isStartingPlayer, setIsStartingPlayer] = useState(false);
+  // const [timer, setTimer] = useTimer();
+  // const [isLoading, setIsLoading] = useState(false);
   const [username, opponent] = useMemo(() => {
     if (!users) return "";
     const parsedUsers = users?.split("&");
@@ -81,102 +75,130 @@ function App() {
     return [username, opponent];
   }, [users]);
 
-  async function startGame() {
-    const tempGame = Game.new();
-    tempGame._gameOn = true;
-    setGame(tempGame);
+  const {
+    handleUserJoined,
+    handleDiceRoll,
+    handleOpponentSelect,
+    handleUserStartedGame,
+    opponentStartedGame,
+    handleOpponentLeft,
+    handleUserSelect,
+    select,
+    timer,
+    game,
+    thisTurn,
+    isLoading,
+    isWaitingForOpponent,
+    thisMove,
+    rollDice,
+    canPlay,
+    isSelecting,
+    player,
+    isStartingPlayer,
+  } = useGameEvents(username, opponent);
 
-    const tempThisTurn = startingGame(game);
-    const startingUser = await getStartingPlayer(username, opponent);
+  // window.onload = () => backgammon();
 
-    const isStarting = startingUser === username;
-    setIsStartingPlayer(isStarting);
+  // const canPlay: boolean = useMemo(() => {
+  //   return player === thisTurn._turnPlayer._name && isStartingPlayer;
+  // }, [thisTurn, player, isStartingPlayer]);
 
-    let turn;
-    if (isStarting) {
-      setPlayer(tempThisTurn._turnPlayer._name);
-      turn = tempThisTurn;
-    } else {
-      setPlayer(tempThisTurn._opponentPlayer._name);
-      turn = new ThisTurn(
-        tempThisTurn._opponentPlayer,
-        tempThisTurn._turnPlayer,
-        [],
-        false
-      );
-    }
-    setThisTurn(turn);
+  // async function startGame() {
+  //   const tempGame = Game.new();
+  //   tempGame._gameOn = true;
+  //   setGame(tempGame);
 
-    const tempThisMove = ThisMove.new();
-    setThisMove(tempThisMove);
-    const result: GameObjectModel = {
-      game: tempGame,
-      turn,
-      move: tempThisMove,
-      isStarting: !isStarting,
-    };
-    return result;
-  }
+  //   const tempThisTurn = startingGame(game);
+  //   const startingUser = await getStartingPlayer(username, opponent);
 
-  function oponentStartedGame(gameJson: string) {
-    setIsWaitingForOpponent(false);
-    const result = JSON.parse(gameJson);
-    const { game, turn, move, isStarting } = result;
-    const newTurn = new ThisTurn(
-      turn._opponentPlayer,
-      turn._turnPlayer,
-      [],
-      false
-    );
+  //   const isStarting = startingUser === username;
+  //   setIsStartingPlayer(isStarting);
 
-    setIsStartingPlayer(isStarting);
+  //   let turn;
+  //   if (isStarting) {
+  //     setPlayer(tempThisTurn._turnPlayer._name);
+  //     turn = tempThisTurn;
+  //   } else {
+  //     setPlayer(tempThisTurn._opponentPlayer._name);
+  //     turn = new ThisTurn(
+  //       tempThisTurn._opponentPlayer,
+  //       tempThisTurn._turnPlayer,
+  //       [],
+  //       false
+  //     );
+  //   }
+  //   setThisTurn(turn);
 
-    setPlayer(turn._opponentPlayer._name);
-    setGame(game);
-    setThisTurn(newTurn);
-    setThisMove(move);
-    const toastmessageJSON = JSON.stringify({
-      message: isStarting
-        ? `You start!`
-        : `Game starts with ${newTurn._opponentPlayer._name}`,
-      turn: newTurn,
-    });
-    toastMessage(toastmessageJSON);
-  }
+  //   const tempThisMove = ThisMove.new();
+  //   setThisMove(tempThisMove);
+  //   const result: GameObjectModel = {
+  //     game: tempGame,
+  //     turn,
+  //     move: tempThisMove,
+  //     isStarting: !isStarting,
+  //   };
+  //   return result;
+  // }
 
-  async function handleUserStartedGame() {
-    const gameObj: GameObjectModel = await startGame();
+  // function oponentStartedGame(gameJson: string) {
+  //   setIsWaitingForOpponent(false);
+  //   const result = JSON.parse(gameJson);
+  //   const { game, turn, move, isStarting } = result;
+  //   const newTurn = new ThisTurn(
+  //     turn._opponentPlayer,
+  //     turn._turnPlayer,
+  //     [],
+  //     false
+  //   );
 
-    await requestStartGame(username, opponent, JSON.stringify(gameObj));
-  }
+  //   setIsStartingPlayer(isStarting);
 
-  function oponentRolledDice(turn: ThisTurn) {
-    setIsStartingPlayer(true);
-    if (thisTurn._rolledDice) {
-      toast.error(
-        `Play your move first
-          ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
-        toastStyle(thisTurn)
-      );
-      return;
-    }
+  //   setPlayer(turn._opponentPlayer._name);
+  //   setGame(game);
+  //   setThisTurn(newTurn);
+  //   setThisMove(move);
+  //   const toastmessageJSON = JSON.stringify({
+  //     message: isStarting
+  //       ? `You start!`
+  //       : `Game starts with ${newTurn._opponentPlayer._name}`,
+  //     turn: newTurn,
+  //   });
+  //   toastMessage(toastmessageJSON);
+  // }
 
-    getDiceToast(turn._dices[0], turn._dices[1], turn);
-    if (turn._rolledDice) turn = checkCantMove(game, turn);
+  // async function handleUserStartedGame() {
+  //   const gameObj: GameObjectModel = await startGame();
 
-    setThisTurn(turn);
-  }
+  //   await requestStartGame(username, opponent, JSON.stringify(gameObj));
+  // }
 
-  function handleDiceRoll(turnJson: string) {
-    const turn = JSON.parse(turnJson);
-    oponentRolledDice(turn);
-  }
+  // function oponentRolledDice(turn: ThisTurn) {
+  //   setIsStartingPlayer(true);
+  //   if (thisTurn._rolledDice) {
+  //     toast.error(
+  //       `Play your move first
+  //         ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
+  //       toastStyle(thisTurn)
+  //     );
+  //     return;
+  //   }
 
-  async function handleUserJoined() {
-    setIsWaitingForOpponent(false);
-    const gameObj: GameObjectModel = await startGame();
-    await requestStartGame(username, opponent, JSON.stringify(gameObj));
-  }
+  //   getDiceToast(turn._dices[0], turn._dices[1], turn);
+  //   if (turn._rolledDice) turn = checkCantMove(game, turn);
+
+  //   setThisTurn(turn);
+  // }
+
+  // function handleDiceRoll(turnJson: string) {
+  //   const turn = JSON.parse(turnJson);
+  //   oponentRolledDice(turn);
+  // }
+
+  // async function handleUserJoined() {
+  //   setIsWaitingForOpponent(false);
+  //   const gameObj: GameObjectModel = await startGame();
+  //   await requestStartGame(username, opponent, JSON.stringify(gameObj));
+  // }
 
   useEffect(() => {
     joinGame(username, opponent, socket.id);
@@ -185,127 +207,142 @@ function App() {
   useEffect(() => {
     socket.on("user-connection", handleUserJoined);
     socket.on("user-rolled-dice", handleDiceRoll);
-    socket.on("opponent-select", handleOponentSelect);
-    socket.on("opponent-started-game", oponentStartedGame);
+    socket.on("opponent-select", handleOpponentSelect);
+    socket.on("opponent-started-game", opponentStartedGame);
     socket.on("changed-turn", toastMessage);
     socket.on("game-over", toastMessage);
     socket.on("user-disconnected", handleOpponentLeft);
     return () => {
       socket.off("user-connection", handleUserStartedGame);
       socket.off("user-rolled-dice", handleDiceRoll);
-      socket.off("opponent-select", handleOponentSelect);
-      socket.off("opponent-started-game", oponentStartedGame);
+      socket.off("opponent-select", handleOpponentSelect);
+      socket.off("opponent-started-game", opponentStartedGame);
       socket.off("changed-turn", toastMessage);
       socket.off("game-over", toastMessage);
       socket.off("user-disconnected", handleOpponentLeft);
     };
   }, []);
 
-  function rollDice() {
-    if (thisTurn.rolledDice) {
-      toast.error(
-        `Play your move first
-          ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
-        toastStyle(thisTurn)
-      );
-      return;
-    }
-    var returnedThisTurn = rollingDice(thisTurn);
-    if (returnedThisTurn._rolledDice)
-      returnedThisTurn = checkCantMove(game, returnedThisTurn);
+  // function rollDice() {
+  //   if (thisTurn.rolledDice) {
+  //     toast.error(
+  //       `Play your move first
+  //         ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
+  //       toastStyle(thisTurn)
+  //     );
+  //     return;
+  //   }
+  //   var returnedThisTurn = rollingDice(thisTurn);
+  //   if (returnedThisTurn._rolledDice)
+  //     returnedThisTurn = checkCantMove(game, returnedThisTurn);
 
-    requestRollDice(username, opponent, JSON.stringify(returnedThisTurn));
-    setThisTurn(returnedThisTurn);
-  }
+  //   requestRollDice(username, opponent, JSON.stringify(returnedThisTurn));
+  //   setThisTurn(returnedThisTurn);
+  // }
 
-  function select(data: string) {
-    const { newgame, turn, move } = JSON.parse(data);
+  // function select(data: string) {
+  //   const { newgame, turn, move } = JSON.parse(data);
 
-    setGame(newgame);
-    setThisTurn(turn);
-    setThisMove(move);
-  }
+  //   setGame(newgame);
+  //   setThisTurn(turn);
+  //   setThisMove(move);
+  // }
 
-  function toastMessage(messageJSON: string) {
-    const { message, turn } = JSON.parse(messageJSON);
-    toast.success(message, toastStyle(turn));
-  }
+  // function toastMessage(messageJSON: string) {
+  //   const { message, turn } = JSON.parse(messageJSON);
+  //   toast.success(message, toastStyle(turn));
+  // }
 
-  function turnRanOutOfTime() {
-    setIsSelecting(false);
-    const newTurn = changeTurn(game, thisTurn);
-    const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
-    const toastMessage = JSON.stringify({ message, turn: thisTurn });
-    setThisTurn(newTurn);
-    notifyChangeTurn(username, opponent, toastMessage);
-  }
+  // function turnRanOutOfTime() {
+  //   setIsSelecting(false);
+  //   const newTurn = changeTurn(game, thisTurn);
+  //   const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
+  //   const toastMessage = JSON.stringify({ message, turn: thisTurn });
+  //   setThisTurn(newTurn);
+  //   notifyChangeTurn(username, opponent, toastMessage);
+  // }
 
-  useEffect(() => {
-    if (timer === 0) turnRanOutOfTime();
-  }, [timer]);
+  // useEffect(() => {
+  //   if (timer === 0) {
+  //     if (!game._gameOn) return;
+  //     turnRanOutOfTime();
+  //     setTimer(119);
+  //   }
+  // }, [timer]);
 
-  useEffect(() => {
-    setTimer(119);
-  }, [thisMove]);
+  // useEffect(() => {
+  //   if (!game._gameOn) setTimer(0);
+  // }, [game._gameOn]);
 
-  function handleOpponentLeft() {
-    const newGame = {
-      ...game,
-      _gameOn: false,
-    };
-    handleUserLeftGameEnd(thisTurn);
-    setGame(game);
-  }
+  // useEffect(() => {
+  //   setTimer(119);
+  // }, [thisMove]);
 
-  async function handleUserSelect(index: number | string) {
-    setIsStartingPlayer(true);
-    if (!canPlay) return;
-    setIsSelecting(true);
-    const memoizedGame = {
-      newgame: { ...game },
-      turn: { ...thisTurn },
-      move: { ...thisMove },
-    };
-    const [returnedGame, returnedThisTurn, returnedThisMove] = selecting(
-      index,
-      game,
-      thisTurn,
-      thisMove
-    );
-    const gameJSON = JSON.stringify({
-      newgame: returnedGame,
-      turn: returnedThisTurn,
-      move: returnedThisMove,
-    });
-    setIsLoading(true);
-    const selected = await requestUserSelect(username, opponent, gameJSON);
-    if (!selected) {
-      debugger;
-      setIsSelecting(false);
-      select(JSON.stringify(memoizedGame));
-      toast.error("Network failed, try again");
-    } else {
-      if (returnedThisTurn._opponentPlayer !== thisTurn._opponentPlayer) {
-        const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
-        const toastMessage = JSON.stringify({
-          message,
-          turn: returnedThisTurn,
-        });
-        notifyChangeTurn(username, opponent, toastMessage);
-      }
-      if (!returnedThisTurn._rolledDice) {
-        setIsSelecting(false);
-      }
+  // function handleOpponentLeft() {
+  //   const newGame = {
+  //     ...game,
+  //     _gameOn: false,
+  //   };
+  //   handleUserLeftGameEnd(thisTurn);
+  //   setGame(game);
+  // }
 
-      select(gameJSON);
-      // socket.emit("user-selected", gameJSON);
-    }
-    setIsLoading(false);
-  }
+  // async function handleUserSelect(index: number | string) {
+  //   setIsStartingPlayer(true);
+  //   if (!canPlay) return;
+  //   setIsSelecting(true);
+  //   const memoizedGame = {
+  //     newgame: { ...game },
+  //     turn: { ...thisTurn },
+  //     move: { ...thisMove },
+  //   };
+  //   const [returnedGame, returnedThisTurn, returnedThisMove] = selecting(
+  //     index,
+  //     game,
+  //     thisTurn,
+  //     thisMove
+  //   );
+  //   const gameJSON = JSON.stringify({
+  //     newgame: returnedGame,
+  //     turn: returnedThisTurn,
+  //     move: returnedThisMove,
+  //   });
+  //   setIsLoading(true);
+  //   const requestSuccessful = await requestUserSelect(
+  //     username,
+  //     opponent,
+  //     gameJSON
+  //   );
+  //   if (!requestSuccessful) {
+  //     debugger;
+  //     setIsSelecting(false);
+  //     select(JSON.stringify(memoizedGame));
+  //     toast.error("Network failed, try again");
+  //   } else {
+  //     if (returnedThisTurn._opponentPlayer !== thisTurn._opponentPlayer) {
+  //       const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
+  //       const toastMessage = JSON.stringify({
+  //         message,
+  //         turn: returnedThisTurn,
+  //       });
+  //       notifyChangeTurn(username, opponent, toastMessage);
+  //     }
+  //     if (!returnedThisTurn._rolledDice) {
+  //       setIsSelecting(false);
+  //     }
+  //     select(gameJSON);
+  //   }
+  //   setIsLoading(false);
+  // }
 
-  function handleOponentSelect(json: string) {
-    select(json);
-  }
+  // function handleOponentSelect(json: string) {
+  //   select(json);
+  //   const { newgame } = JSON.parse(json);
+  //   if (newgame._gameOn) return;
+  //   debugger;
+  //   toast("You lost!", toastStyle(thisTurn));
+  //   setTimer(0);
+  // }
   return (
     <>
       {isLoading && <LoadingSpinner />}
