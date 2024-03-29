@@ -1,0 +1,34 @@
+version: "3"
+services:
+  access_control-service:
+    build:
+      context: ./TalkBackServer.AccessControl
+    ports:
+      - 3001:3001
+
+  chat-service:
+    build:
+      context: ./TalkBackServer.Chat
+    ports:
+      - 3002:3002
+      - 4000:4000
+
+  game-service:
+    build:
+      context: ./TalkBackServer.Game
+    ports:
+      - 3003:3003
+      - 4001:4001
+
+  online_users-service:
+    build:
+      context: ./TalkBackServer.OnlineUsers
+    depends_on:
+      - redis
+    ports:
+      - 3004:3004
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379

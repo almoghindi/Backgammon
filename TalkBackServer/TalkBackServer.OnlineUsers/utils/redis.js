@@ -1,6 +1,8 @@
 import { createClient } from "redis";
 
-const client = await createClient(6379, "127.0.0.1")
+const client = await createClient({
+  url: "redis://redis:6379",
+})
   .on("error", (err) => console.log("Redis Client Error", err))
   .connect();
 

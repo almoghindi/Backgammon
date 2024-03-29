@@ -3,7 +3,6 @@ import http from "http";
 import express from "express";
 import cors from "cors";
 import fs from "fs";
-import mongoose from "mongoose";
 import gameRoutes from "./routes/game.routes.js";
 
 import dotenv from "dotenv";

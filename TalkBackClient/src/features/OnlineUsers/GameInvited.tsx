@@ -13,6 +13,7 @@ interface GameInviteProps {
 const GameInviting: React.FC<GameInviteProps> = ({
   open,
   onClose,
+  onAccept,
   username,
 }) => {
   return (
