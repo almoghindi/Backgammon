@@ -26,7 +26,7 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
   const [openGameInvitedModal, setOpenGameInvitedModal] = useState(false);
   const [fromUsername, setFromUsername] = useState<string>("");
   const [messageFrom, setMessageFrom] = useState("");
-  
+
   const { sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
 
@@ -47,14 +47,6 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
 
   useEffect(() => {
     fetchOnlineUsers();
-
-    const messageRegex = /^(.+) sent you a message$/;
-    let match = notification.match(messageRegex);
-
-    if (match) {
-      setMessageFrom(match[1]);
-    }
-
   }, [notification]);
 
   useEffect(() => {
@@ -105,6 +97,15 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
     onChatOpen(user);
   };
 
+  useEffect(() => {
+    const messageRegex = /^(.+) sent you a message$/;
+    let match = notification.match(messageRegex);
+
+    if (match) {
+      setMessageFrom(match[1]);
+    }
+  }, [notification, openChats]);
+
   // const [activeChats, setActiveChats] = useState<string[]>([]);
 
   // function openChatWindow(user: string) {
@@ -129,6 +130,8 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
               onChat={() => {
                 openChat(user.username);
               }}
+              openChat={user.username}
+              messageFrom={messageFrom}
             />
           ))}
       </List>
