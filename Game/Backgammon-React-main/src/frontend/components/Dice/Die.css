@@ -6,12 +6,9 @@
 
 /* Applying Animation */
 .Die-shaking {
-  animation-name: wobble;
-  animation-duration: 1s;
+  animation: wobble 1s ease-in-out;
 }
 
-/* Setting Animation effect to the  
-     dice using css keyframe */
 @keyframes wobble {
   from {
     transform: translate3d(0, 0, 0);

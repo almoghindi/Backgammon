@@ -1,24 +1,22 @@
 import Die from "./Die.jsx";
 import "./Dice.css";
+import { useEffect, useMemo, useState } from "react";
 
-const numberToDieFaceMap: Record<number, string> = {
-  1: "one",
-  2: "two",
-  3: "three",
-  4: "four",
-  5: "five",
-  6: "six",
-};
-
-export default function Dice(props: { dice: number[]; isRolling: boolean }) {
-  const { dice, isRolling } = props;
+export default function Dice(props: { dice: number[]; }) {
+  const { dice } = props;
+  const formattedDice = useMemo(() => {
+    if (dice.length > 2) {
+      return dice.slice(0, 2);
+    }
+    return dice;
+  }, [dice]);
 
   return (
     <div className="RollDice">
       <div className="RollDice-container">
-        {dice &&
-          dice.map((d, index) => (
-            <Die key={index} face={numberToDieFaceMap[d]} rolling={isRolling} />
+        {formattedDice &&
+          formattedDice.map((d, index) => (
+            <Die key={index} face={d}/>
           ))}
       </div>
     </div>
