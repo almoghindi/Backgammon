@@ -41,7 +41,7 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
 
   const handleAcceptGame = () => {
     onlineUsersSocket.emit("invite-accepted", fromUsername);
-    window.open(`http://localhost:5174/game/${auth.username}&${fromUsername}`);
+    window.open(`http://localhost:5174/game/${auth.username}&${fromUsername}?token=${auth.token}`);
     setOpenGameInvitedModal(false);
   };
 

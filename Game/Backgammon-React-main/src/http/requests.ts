@@ -12,9 +12,9 @@ export async function joinGame(
   username: string,
   opponent: string,
   socketId: string | undefined
-) {
+): Promise<boolean> {
   try {
-    if (socketId === undefined) return;
+    if (socketId === undefined) false;
     const body = {
       username,
       opponent,
@@ -28,7 +28,36 @@ export async function joinGame(
         "Access-Control-Allow-Origin": "*",
       },
     });
-    if (!response.ok) console.error(response);
+    if (!response.ok) throw new Error("failed to join game");
+    // await sendRequest<ChatMessagesResponse>(
+    //   baseURL + "/join-game",
+    //   "POST",
+    //   body,
+    //   { authorization: `Bearer ${token}` }
+    // );
+    if (!response) throw new Error("fetch failed");
+    const data = await response.json();
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+
+export async function requestEndGame(username: string, opponent: string) {
+  try {
+    const response = await fetch(baseURL + "/end-game", {
+      headers: {
+        "Content-type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        username,
+        opponent,
+      }),
+    });
+    if (!response.ok) throw new Error("failed to end game");
   } catch (err) {
     console.error(err);
   }

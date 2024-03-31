@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
         left: 0,
         bottom: 0,
         width: "100%",
-        zIndex: (theme) => theme.zIndex.drawer + 1,
+        zIndex: -1,
       }}
     >
       <Container maxWidth="lg">

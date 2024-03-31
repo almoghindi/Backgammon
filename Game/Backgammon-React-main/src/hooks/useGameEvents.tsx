@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import useGameState from "./useGameLogic";
+import useGameState from "./useGameState";
 import useTimer from "../frontend/components/timer/useTimer";
 import Game from "../logic/models/game";
 import { startingGame } from "../logic/events/start-game";
 import {
   getStartingPlayer,
   notifyChangeTurn,
+  requestEndGame,
   requestRollDice,
   requestStartGame,
   requestUserSelect,
@@ -13,7 +14,7 @@ import {
 import ThisTurn from "../logic/models/this-turn";
 import ThisMove from "../logic/models/this-move";
 import toast from "react-hot-toast";
-import { toastStyle } from "../App";
+import { toastMessage, toastStyle } from "../utils/functions";
 import { getDiceToast, rollingDice } from "../logic/events/roll-dice";
 import { checkCantMove } from "../logic/calculations/calc-possible-moves";
 import { changeTurn } from "../logic/events/change-turn";
@@ -26,6 +27,8 @@ interface GameObjectModel {
   move: ThisMove;
   isStarting: boolean;
 }
+
+
 export default function useGameEvents(username: string, opponent: string) {
   const [game, setGame, thisTurn, setThisTurn, thisMove, setThisMove] =
     useGameState();
@@ -186,13 +189,18 @@ export default function useGameEvents(username: string, opponent: string) {
     setTimer(119);
   }, [thisMove]);
 
-  function handleOpponentLeft() {
-    const newGame = {
-      ...game,
-      _gameOn: false,
-    };
-    handleUserLeftGameEnd(thisTurn);
-    setGame(game);
+  function handleOpponentLeft(leavingUser: string) {
+    if (leavingUser === opponent) {
+      toast.error("Opponent left the game", toastStyle(thisTurn));
+      setTimer(0);
+      const newGame = {
+        ...game,
+        _gameOn: false,
+      };
+      handleUserLeftGameEnd(thisTurn);
+      requestEndGame(username, opponent);
+      setGame(game);
+    }
   }
 
   async function handleUserSelect(index: number | string) {
@@ -222,7 +230,6 @@ export default function useGameEvents(username: string, opponent: string) {
       gameJSON
     );
     if (!requestSuccessful) {
-      debugger;
       setIsSelecting(false);
       select(JSON.stringify(memoizedGame));
       toast.error("Network failed, try again");
@@ -275,7 +282,3 @@ export default function useGameEvents(username: string, opponent: string) {
   };
 }
 
-export function toastMessage(messageJSON: string) {
-  const { message, turn } = JSON.parse(messageJSON);
-  toast.success(message, toastStyle(turn));
-}

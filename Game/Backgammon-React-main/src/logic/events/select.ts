@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { toastStyle } from "../../App";
+import { toastStyle } from "../../utils/functions";
 import { calcMovesMade } from "../calculations/calc-moves-made";
 import {
   calcEndingDiceBars,

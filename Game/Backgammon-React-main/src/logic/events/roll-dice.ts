@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { toastStyle } from "../../App";
+import { toastStyle } from "../../utils/functions";
 import ThisTurn from "../models/this-turn";
 
 export function dice(): number[] {
