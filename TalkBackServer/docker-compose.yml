@@ -5,6 +5,7 @@ services:
       context: ./TalkBackServer.AccessControl
     ports:
       - 3001:3001
+    restart: always
 
   chat-service:
     build:
@@ -12,13 +13,14 @@ services:
     ports:
       - 3002:3002
       - 4000:4000
+    restart: always
 
   game-service:
     build:
       context: ./TalkBackServer.Game
     ports:
       - 3003:3003
-      - 4001:4001
+    restart: always
 
   online_users-service:
     build:
@@ -27,8 +29,10 @@ services:
       - redis
     ports:
       - 3004:3004
+    restart: always
 
   redis:
     image: redis:alpine
     ports:
       - 6379:6379
+    restart: always

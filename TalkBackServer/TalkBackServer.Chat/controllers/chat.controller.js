@@ -45,8 +45,12 @@ export async function enterChat(req, res, next) {
 export async function sendMessage(req, res, next) {
   const { message, to } = req.body;
   try {
-    const pushNotificationResponse = await axios.get(
-      `http://localhost:3004/api/users/online/get-online-user/${to}`
+    const pushNotificationResponse = await axios.post(
+      `http://online_users-service:3004/api/users/online/exist-online-user`,
+      {
+        from: message.sender,
+        to,
+      }
     );
     if (pushNotificationResponse.status !== 200) {
       throw new Error("user not connected");

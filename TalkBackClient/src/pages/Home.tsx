@@ -9,9 +9,13 @@ import { Typography } from "@mui/material";
 import { onlineUsersSocket } from "../utils/socketConnection";
 const HomePage: React.FC = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [openChat, setOpenChat] = useState("");
   const { username } = useContext(AuthContext);
   const handleNotification = (message: string) => {
     setNotificationMessage(message);
+  };
+  const handleOpenChat = (user: string) => {
+    setOpenChat(user);
   };
 
   useEffect(() => {
@@ -24,8 +28,14 @@ const HomePage: React.FC = () => {
     <>
       <NavBar />
       <Typography textAlign={"center"}>Playing as: {username}</Typography>
-      <Notification onNotification={handleNotification} />
-      <OnlineList notification={notificationMessage} />
+      <Notification
+        onNotification={handleNotification}
+        userWithOpenChat={openChat}
+      />
+      <OnlineList
+        notification={notificationMessage}
+        onChatOpen={handleOpenChat}
+      />
       <OfflineList notification={notificationMessage} />
       <Footer />
     </>

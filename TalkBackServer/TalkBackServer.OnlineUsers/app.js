@@ -30,7 +30,6 @@ export const pushMessage = (message, to) => {
 };
 
 export const pushGameInvite = (from, to) => {
-  console.log(to);
   io.to(usernameToSocketIdMap[to]).emit("game-invite", from);
 };
 

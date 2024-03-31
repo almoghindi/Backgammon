@@ -10,9 +10,13 @@ import Snackbar from "../../components/Snackbar";
 import notificationSound from "../../assets/message-sound.mp3";
 interface NotificationProps {
   onNotification: (message: string) => void;
+  userWithOpenChat: string;
 }
 
-const Notification: React.FC<NotificationProps> = ({ onNotification }) => {
+const Notification: React.FC<NotificationProps> = ({
+  onNotification,
+  userWithOpenChat,
+}) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [onlineStatus, setOnlineStatus] = useState(false);
@@ -40,14 +44,6 @@ const Notification: React.FC<NotificationProps> = ({ onNotification }) => {
     //   });
     // };
 
-    socket.on("push-message", (message: string) => {
-      setSnackbarMessage(message);
-      setSnackbarOpen(true);
-      setOnlineStatus(true);
-      setSnackbarSeverity("info");
-      setPlayMessageSound(true);
-    });
-
     socket.on("user-joined", (message: string) => {
       setSnackbarMessage(message);
       setSnackbarOpen(true);
@@ -73,6 +69,30 @@ const Notification: React.FC<NotificationProps> = ({ onNotification }) => {
       //document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
+
+  useEffect(() => {
+    socket.on("push-message", (message: string) => {
+      const messageRegex = /^(.+) sent you a message$/;
+
+      let match = message.match(messageRegex);
+      let username = "";
+      if (match) {
+        username = match[1];
+      }
+
+      if (!userWithOpenChat && userWithOpenChat != username) {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+        setOnlineStatus(true);
+        setSnackbarSeverity("info");
+        setPlayMessageSound(true);
+      }
+    });
+
+    return () => {
+      socket.off("push-message");
+    };
+  }, [userWithOpenChat]);
 
   useEffect(() => {
     onNotification(snackbarMessage);

@@ -4,6 +4,7 @@ import {
   ListItemText,
   ListItemIcon,
   IconButton,
+  // Badge,
 } from "@mui/material";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -16,6 +17,8 @@ import Snackbar from "../../components/Snackbar";
 interface OnlineUserProps {
   username: string;
   onChat: () => void;
+  openChat: string;
+  
 }
 
 const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
@@ -58,11 +61,8 @@ const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
         "POST",
         { from: auth.username, to: username }
       );
-      console.log("Invite sent");
-      // Optionally handle the response, like opening a notification
     } catch (err) {
       console.error(err);
-      // Optionally handle the error, like showing an error message
     }
   };
 

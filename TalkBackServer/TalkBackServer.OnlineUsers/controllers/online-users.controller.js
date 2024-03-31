@@ -63,21 +63,19 @@ export const deleteOnlineUser = async (userId) => {
   }
 };
 
-export const getExistByUsername = async (req, res) => {
+export const existByUsername = async (req, res) => {
+  const { from, to } = req.body;
   try {
-    if (!req.params.username) {
-      return res.status(400).json({ error: "Missing username" });
+    if (!from || !to) {
+      return res.status(400).json({ error: "Missing body" });
     }
 
-    const exists = await isExistByUsername(req.params.username);
+    const exists = await isExistByUsername(to);
     if (!exists) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    pushMessage(
-      `${req.params.username} sent you a message`,
-      req.params.username
-    );
+    pushMessage(`${from} sent you a message`, to);
     return res.status(200).json({ message: "User found" });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });

@@ -23,7 +23,7 @@ export default function SlidingChatPanel(props: Props) {
         setIsOpen(false);
       }}
     >
-      <div style={{ backgroundColor: "#787878" }}>
+      <div style={{ backgroundColor: "#787878", height: "70vh" }}>
         {openChat && (
           <ChatWindow chatBuddyUsername={openChat} onCloseWindow={() => {}} />
         )}

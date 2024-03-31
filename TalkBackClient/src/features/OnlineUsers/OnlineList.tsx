@@ -6,17 +6,27 @@ import SlidingChatPanel from "../Chat/SlidingChat/SlidingChat";
 // import LoadingSpinner from "../../components/LoadingSpinner";
 import { AuthContext } from "../../context/auth-context";
 import { OnlineUser as OnlineUserInterface } from "../../types/OnlineUser";
-import { NotificationProps } from "../../types/Notification";
+// import { NotificationProps } from "../../types/Notification";
 import GameInvited from "./GameInvited";
 import { onlineUsersSocket } from "../../utils/socketConnection";
 
 import "./OnlineList.css";
 
-const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
+interface OnlineUsersList {
+  notification: string;
+  onChatOpen: (message: string) => void;
+}
+
+const OnlineUsersList: React.FC<OnlineUsersList> = ({
+  notification,
+  onChatOpen,
+}) => {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUserInterface[]>([]);
   useState<boolean>(false);
   const [openGameInvitedModal, setOpenGameInvitedModal] = useState(false);
   const [fromUsername, setFromUsername] = useState<string>("");
+  const [messageFrom, setMessageFrom] = useState("");
+  
   const { sendRequest } = useHttpClient();
   const auth = useContext(AuthContext);
 
@@ -37,10 +47,17 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
 
   useEffect(() => {
     fetchOnlineUsers();
+
+    const messageRegex = /^(.+) sent you a message$/;
+    let match = notification.match(messageRegex);
+
+    if (match) {
+      setMessageFrom(match[1]);
+    }
+
   }, [notification]);
 
   useEffect(() => {
-    console.log("hello");
     onlineUsersSocket.on("game-invite", (from: string) => {
       openGameInvited();
       setFromUsername(from);
@@ -81,9 +98,11 @@ const OnlineUsersList: React.FC<NotificationProps> = ({ notification }) => {
 
   const handleCloseChat = () => {
     setOpenChats("");
+    onChatOpen("");
   };
   const openChat = (user: string) => {
     setOpenChats(user);
+    onChatOpen(user);
   };
 
   // const [activeChats, setActiveChats] = useState<string[]>([]);

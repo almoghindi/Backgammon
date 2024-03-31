@@ -4,7 +4,6 @@ dotenv.config();
 
 export const auth = (req, res, next) => {
   try {
-    console.log("in chat auth");
     const userToken = req.header("authorization");
     if (!userToken) return res.status(401).json({ error: "unauthorization" });
     const token = userToken.split(" ")[1];
