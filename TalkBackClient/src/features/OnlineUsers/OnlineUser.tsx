@@ -4,7 +4,7 @@ import {
   ListItemText,
   ListItemIcon,
   IconButton,
-  // Badge,
+  Badge,
 } from "@mui/material";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -18,13 +18,20 @@ interface OnlineUserProps {
   username: string;
   onChat: () => void;
   openChat: string;
-  
+  messageFrom: string;
 }
 
-const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
+const OnlineUser: React.FC<OnlineUserProps> = ({
+  username,
+  onChat,
+  openChat,
+  messageFrom,
+}) => {
   const { sendRequest } = useHttpClient();
   const [openGameInvitingModal, setOpenGameInvitingModal] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+
   const auth = useContext(AuthContext);
 
   const openGameInviting = () => {
@@ -54,6 +61,14 @@ const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
     };
   }, []);
 
+  useEffect(() => {
+    console.log(openChat);
+    console.log(messageFrom);
+    if (openChat && messageFrom && openChat == messageFrom) {
+      setShowNotification(true);
+    }
+  }, [openChat, messageFrom]);
+
   const sendGameInviting = async () => {
     try {
       await sendRequest(
@@ -73,9 +88,18 @@ const OnlineUser: React.FC<OnlineUserProps> = ({ username, onChat }) => {
           <FiberManualRecordIcon sx={{ color: "green" }} />
         </ListItemIcon>
         <ListItemText primary={username} />
-        <IconButton edge="end" onClick={onChat}>
-          <ChatIcon sx={{ color: "white" }} />
-        </IconButton>
+        <Badge color="error" variant="dot" invisible={!showNotification}>
+          <IconButton
+            edge="end"
+            onClick={() => {
+              onChat();
+              setShowNotification(false);
+            }}
+            sx={{ padding: "2px 8px" }}
+          >
+            <ChatIcon sx={{ color: "white" }} />
+          </IconButton>
+        </Badge>
         <IconButton edge="end" onClick={openGameInviting}>
           <PlayArrowIcon sx={{ color: "white" }} />
         </IconButton>
