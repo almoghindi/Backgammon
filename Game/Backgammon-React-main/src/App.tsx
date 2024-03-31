@@ -13,6 +13,7 @@ import { toastMessage } from "./utils/functions";
 import toast from "react-hot-toast";
 import { Button } from "@mui/material";
 import { useHttpClient } from "./http/useHttp";
+import Dice from "./frontend/components/Dice/Dice";
 
 function App() {
   const { users } = useParams();
@@ -23,7 +24,7 @@ function App() {
     const opponent = parsedUsers[1];
     return [username, opponent];
   }, [users]);
-  const {joinGame} = useHttpClient();
+  const { joinGame } = useHttpClient();
 
   const {
     handleUserJoined,
@@ -87,13 +88,20 @@ function App() {
               You play as <span className={player}>{player}</span>
             </h1>
             <div className="dice">
-              {thisTurn._dices && canPlay && <h3>{thisTurn._dices}</h3>}
+              {thisTurn._dices && canPlay && (
+                <Dice dice={thisTurn._dices}></Dice>
+              )}
             </div>
             <div>
               <Timer timer={timer} />
             </div>
           </div>
-          <BoardTop game={game} thisMove={thisMove} select={handleUserSelect} isBlack={player === 'Black'}/>
+          <BoardTop
+            game={game}
+            thisMove={thisMove}
+            select={handleUserSelect}
+            isBlack={player === "Black"}
+          />
 
           <BoardBottom
             game={game}
@@ -105,7 +113,9 @@ function App() {
             isSelecting={isSelecting}
           />
           <div>
-            <Button className="" onClick={() => window.close()}>Quit game</Button>
+            <Button className="" onClick={() => window.close()}>
+              Quit game
+            </Button>
           </div>
         </div>
       )}

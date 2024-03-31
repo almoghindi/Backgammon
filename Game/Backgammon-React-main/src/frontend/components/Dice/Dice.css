@@ -2,7 +2,9 @@
 .RollDice {
   display: flex;
   flex-flow: column nowrap;
-  min-height: 100vh;
+  position: relative;
+  top: 0;
+  left: 40px;
 }
 
 /* Shows each dice in one row */
