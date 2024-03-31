@@ -13,6 +13,8 @@ interface UserAuthData {
   username: string;
 }
 
+const baseURL = "http://localhost:3003/api/game";
+
 interface HttpClientHook {
   isLoading: boolean;
   error: string | null;
@@ -23,26 +25,16 @@ interface HttpClientHook {
     headers?: Record<string, string>
   ) => Promise<T>;
   clearError: () => void;
+  joinGame: (username: string, opponent: string, socketId: string | undefined) => Promise<boolean>;
 }
 
 export const useHttpClient = (): HttpClientHook => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  let token: string | undefined;
+  const searchParams = new URLSearchParams(window.location.search);
+  const token = searchParams.get("token");
   useEffect(() => {
-    const userDataJson = localStorage.getItem("userData");
-    if (!userDataJson) {
-      setError("User doesn't exist");
-      return;
-    }
-    const userData: UserAuthData = JSON.parse(userDataJson);
-    const userToken = userData.token;
-    if (!userToken) {
-      setError("Unauthorized");
-      return;
-    }
-    token = userToken;
+    if(!token) setError("Not authorized. Please log in.");
   }, []);
 
   const activeHttpRequests = useRef<CancelTokenSource[]>([]);
@@ -90,6 +82,33 @@ export const useHttpClient = (): HttpClientHook => {
     setError(null);
   };
 
+  async function joinGame(
+    username: string,
+    opponent: string,
+    socketId: string | undefined
+  ): Promise<boolean> {
+    try {
+      if (socketId === undefined) false;
+      const body = {
+        username,
+        opponent,
+        socketId,
+      };
+      const response =  await sendRequest(
+          baseURL + "/join-game",
+          "POST",
+          body,
+          { authorization: `Bearer ${token}` }
+        );
+      if (!response) throw new Error("failed to join game");
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+
   useEffect(() => {
     return () => {
       activeHttpRequests.current.forEach((abortCtrl) =>
@@ -98,5 +117,5 @@ export const useHttpClient = (): HttpClientHook => {
     };
   }, []);
 
-  return { isLoading, error, sendRequest, clearError };
+  return { isLoading, error, sendRequest, clearError, joinGame };
 };

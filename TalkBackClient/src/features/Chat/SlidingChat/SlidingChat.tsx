@@ -19,11 +19,10 @@ export default function SlidingChatPanel(props: Props) {
       isOpen={isOpen}
       title="Chat"
       onRequestClose={() => {
-        // triggered on "<" on left top click or on outside click
         setIsOpen(false);
       }}
     >
-      <div style={{ backgroundColor: "#787878", height: "70vh" }}>
+      <div style={{height: '70%'}}>
         {openChat && (
           <ChatWindow chatBuddyUsername={openChat} onCloseWindow={() => {}} />
         )}

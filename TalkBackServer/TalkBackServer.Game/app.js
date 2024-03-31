@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import gameRoutes from "./routes/game.routes.js";
+import { usernameToSocketIdMap, openGames } from "./controllers/game.controller.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -53,20 +54,9 @@ export function socketEmit(eventName, data, to) {
 }
 
 io.on("connection", (socket) => {
-  // socket.on("dice-roll", (turn) => {
-  //   socket.broadcast.emit("user-rolled-dice", turn);
-  // });
-  // socket.on("user-selected", (json) => {
-  //   socket.broadcast.emit("opponent-select", json);
-  // });
-  // socket.on("game-start", (gameOBJECT) => {
-  //   socket.broadcast.emit("oponent-started-game", gameOBJECT);
-  // });
-  // socket.on("notify-changed-turn", (messageJSON) => {
-  //   socket.broadcast.emit("changed-turn", messageJSON);
-  // });
   socket.on("disconnect", () => {
-    console.log("disconnection");
+    const leavingUser = Object.keys(usernameToSocketIdMap).find(username => usernameToSocketIdMap[username] === socket.id);
+    io.emit("user-disconnected", leavingUser);
   });
 });
 
@@ -74,6 +64,5 @@ io.on("disconnect", () => {
   console.log("disconnected io");
 });
 
-// io.listen(process.env.GAME_SOCKET_PORT || 4003);
 
 socketServer.listen(process.env.GAME_PORT || 3003);

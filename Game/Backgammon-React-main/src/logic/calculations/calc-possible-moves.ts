@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { toastStyle } from "../../App";
+import { toastStyle } from "../../utils/functions";
 import { changeTurn } from "../events/change-turn";
 import Game from "../models/game";
 import ThisTurn from "../models/this-turn";

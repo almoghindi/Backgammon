@@ -6,15 +6,18 @@ import {
   rollDice,
   notifyChangeTurn,
   select,
+  endGame
 } from "../controllers/game.controller.js";
+import {auth} from '../middlewares/auth.js';
 
 const router = express.Router();
 
 router.post("/get-first-player", getFirstPlayer);
-router.post("/join-game", userJoin);
+router.post("/join-game", auth , userJoin);
 router.post("/start-game", startGame);
 router.post("/roll-dice", rollDice);
 router.post("/notify-change-turn", notifyChangeTurn);
 router.post("/select", select);
+router.post("/end-game", endGame);
 
 export default router;

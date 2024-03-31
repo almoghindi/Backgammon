@@ -6,11 +6,13 @@ import Bar from "./components/Bar";
 import Board from "./components/Board";
 import EndBar from "./components/EndBar";
 import Piece from "./components/Piece";
+import "./BoardTop.css";
 
 interface BoardProps {
   game: Game;
   thisMove: ThisMove;
   select: any;
+  isBlack: boolean;
 }
 
 export default function BoardTop(props: BoardProps) {
@@ -36,16 +38,18 @@ export default function BoardTop(props: BoardProps) {
 
   function CreateBoard() {
     return (
-      <Board>
-        {props.game._board.map((bar: string[], barIdx: number) => (
-          <CreateBar
-            bar={bar}
-            barIdx={barIdx}
-            key={`${barIdx}-temp`}
-            {...props}
-          />
-        ))}
-      </Board>
+      <div className={props.isBlack ? "rotated" : ""}>
+        <Board>
+          {props.game._board.map((bar: string[], barIdx: number) => (
+            <CreateBar
+              bar={bar}
+              barIdx={barIdx}
+              key={`${barIdx}-temp`}
+              {...props}
+            />
+          ))}
+        </Board>
+      </div>
     );
   }
 
