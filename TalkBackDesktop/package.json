@@ -1,14 +1,14 @@
 {
   "name": "talkbackdesktop",
-  "main": "public/electron.js",
+  "main": "./src/electron.js",
   "homepage": "./",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently -k \"npm start\" \"npm:electron\"",
-    "start": "vite",
-    "electron": "wait-on tcp:5137 && electron ."
+    "start": "react-scripts start",
+    "electron": "electron ."
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -19,6 +19,7 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
+    "electron": "^29.1.6",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",

@@ -12,7 +12,7 @@ function createWindow() {
 
   // and load the index.html of the app.
   // win.loadFile("index.html");
-  win.loadURL("http://localhost:5137");
+  win.loadURL("http://localhost:5173/auth");
   // Open the DevTools.
 }
 

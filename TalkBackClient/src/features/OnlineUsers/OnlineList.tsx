@@ -36,12 +36,14 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
 
   const closeGameInvited = () => {
     setOpenGameInvitedModal(false);
-    onlineUsersSocket.emit("invite-declined", fromUsername);
+    onlineUsersSocket.emit("invite-declined", fromUsername, auth.username);
   };
 
   const handleAcceptGame = () => {
     onlineUsersSocket.emit("invite-accepted", fromUsername);
-    window.open(`http://localhost:5174/game/${auth.username}&${fromUsername}?token=${auth.token}`);
+    window.open(
+      `http://localhost:5174/game/${auth.username}&${fromUsername}?token=${auth.token}`
+    );
     setOpenGameInvitedModal(false);
   };
 

@@ -45,14 +45,18 @@ const OnlineUser: React.FC<OnlineUserProps> = ({
   };
 
   useEffect(() => {
-    onlineUsersSocket.on("decline-invite", () => {
-      setOpenGameInvitingModal(false);
-      setOpenSnackbar(true);
+    onlineUsersSocket.on("decline-invite", (to) => {
+      if (username == to) {
+        setOpenGameInvitingModal(false);
+        setOpenSnackbar(true);
+      }
     });
 
     onlineUsersSocket.on("accept-invite", () => {
       setOpenGameInvitingModal(false);
-      window.open(`http://localhost:5174/game/${auth.username}&${username}?token=${auth.token}`);
+      window.open(
+        `http://localhost:5174/game/${auth.username}&${username}?token=${auth.token}`
+      );
     });
 
     return () => {
@@ -62,10 +66,10 @@ const OnlineUser: React.FC<OnlineUserProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log(openChat);
-    console.log(messageFrom);
     if (openChat && messageFrom && openChat == messageFrom) {
       setShowNotification(true);
+    } else {
+      setShowNotification(false);
     }
   }, [openChat, messageFrom]);
 
