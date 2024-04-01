@@ -44,7 +44,12 @@ export async function joinGame(
   }
 }
 
-export async function requestEndGame(username: string, opponent: string) {
+export async function requestEndGame(
+  username: string,
+  opponent: string,
+  isWin: boolean,
+  points: number
+) {
   try {
     const response = await fetch(baseURL + "/end-game", {
       headers: {
@@ -55,6 +60,8 @@ export async function requestEndGame(username: string, opponent: string) {
       body: JSON.stringify({
         username,
         opponent,
+        isWin,
+        points,
       }),
     });
     if (!response.ok) throw new Error("failed to end game");

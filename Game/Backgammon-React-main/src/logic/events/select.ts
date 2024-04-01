@@ -219,7 +219,6 @@ export function settingToBar(
 ): ThisTurn {
   thisMove._toBarIdx = index;
   movingPiece(game, thisTurn, thisMove);
-
   thisTurn = calcMovesMade(thisTurn, thisMove);
 
   return thisTurn;

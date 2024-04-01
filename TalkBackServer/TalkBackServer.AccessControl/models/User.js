@@ -11,20 +11,6 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  stats: {
-    wins: {
-      type: Number,
-      default: 0,
-    },
-    losses: {
-      type: Number,
-      default: 0,
-    },
-    points: {
-      type: Number,
-      default: 0,
-    },
-  },
 });
 
 export default mongoose.model("user", userSchema);

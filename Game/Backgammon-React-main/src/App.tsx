@@ -37,6 +37,7 @@ function App() {
     handleOpponentLeft,
     handleUserSelect,
     rollDice,
+    handleGameOver,
     timer,
     isLoading,
     isWaitingForOpponent,
@@ -64,6 +65,7 @@ function App() {
     socket.on("opponent-started-game", opponentStartedGame);
     socket.on("changed-turn", toastMessage);
     socket.on("game-over", toastMessage);
+    socket.on("on-game-won", (game) => handleGameOver(game, true));
     socket.on("user-disconnected", handleOpponentLeft);
     return () => {
       socket.off("user-connection", handleUserStartedGame);
