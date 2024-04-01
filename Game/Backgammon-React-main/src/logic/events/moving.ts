@@ -1,3 +1,4 @@
+import { socket } from "../../socket";
 import Game from "../models/game";
 import ThisMove from "../models/this-move";
 import ThisTurn from "../models/this-turn";
@@ -50,7 +51,7 @@ export function movingPiece(
 
     if (thisTurn._turnPlayer._endBar.length === 15) {
       game._gameOn = false;
-      celebrateGameEnd(thisTurn);
+      socket.emit("game-win", JSON.stringify(game));
     }
 
     return game;

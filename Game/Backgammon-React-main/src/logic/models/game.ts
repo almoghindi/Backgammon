@@ -56,6 +56,8 @@ export default class Game {
     ["Black", "Black"],
   ];
 
+  
+
   public get gameOn(): boolean {
     return this._gameOn;
   }

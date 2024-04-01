@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useGameState from "./useGameState";
 import useTimer from "../frontend/components/timer/useTimer";
 import Game from "../logic/models/game";
@@ -28,9 +28,8 @@ interface GameObjectModel {
   isStarting: boolean;
 }
 
-
 export default function useGameEvents(username: string, opponent: string) {
-  const [game, setGame, thisTurn, setThisTurn, thisMove, setThisMove] =
+  const { game, updateGame, thisTurn, updateTurn, thisMove, updateMove } =
     useGameState();
   const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(true);
   const [player, setPlayer] = useState<string>("");
@@ -43,10 +42,10 @@ export default function useGameEvents(username: string, opponent: string) {
     return player === thisTurn._turnPlayer._name && isStartingPlayer;
   }, [thisTurn, player, isStartingPlayer]);
 
-  async function startGame() {
+  const startGame = useCallback(async () => {
     const tempGame = Game.new();
     tempGame._gameOn = true;
-    setGame(tempGame);
+    updateGame(tempGame);
 
     const tempThisTurn = startingGame(game);
     const startingUser = await getStartingPlayer(username, opponent);
@@ -67,10 +66,10 @@ export default function useGameEvents(username: string, opponent: string) {
         false
       );
     }
-    setThisTurn(turn);
+    updateTurn(turn);
 
     const tempThisMove = ThisMove.new();
-    setThisMove(tempThisMove);
+    updateMove(tempThisMove);
     const result: GameObjectModel = {
       game: tempGame,
       turn,
@@ -78,9 +77,9 @@ export default function useGameEvents(username: string, opponent: string) {
       isStarting: !isStarting,
     };
     return result;
-  }
+  }, [game, username, opponent]);
 
-  function opponentStartedGame(gameJson: string) {
+  const opponentStartedGame = useCallback((gameJson: string) => {
     setIsWaitingForOpponent(false);
     const result = JSON.parse(gameJson);
     const { game, turn, move, isStarting } = result;
@@ -94,9 +93,9 @@ export default function useGameEvents(username: string, opponent: string) {
     setIsStartingPlayer(isStarting);
 
     setPlayer(turn._opponentPlayer._name);
-    setGame(game);
-    setThisTurn(newTurn);
-    setThisMove(move);
+    updateGame(game);
+    updateTurn(newTurn);
+    updateMove(move);
     const toastmessageJSON = JSON.stringify({
       message: isStarting
         ? `You start!`
@@ -104,30 +103,33 @@ export default function useGameEvents(username: string, opponent: string) {
       turn: newTurn,
     });
     toastMessage(toastmessageJSON);
-  }
+  }, []);
 
-  async function handleUserStartedGame() {
+  const handleUserStartedGame = useCallback(async () => {
     const gameObj: GameObjectModel = await startGame();
 
     await requestStartGame(username, opponent, JSON.stringify(gameObj));
-  }
+  }, [requestStartGame, startGame, username, opponent]);
 
-  function oponentRolledDice(turn: ThisTurn) {
-    setIsStartingPlayer(true);
-    if (thisTurn._rolledDice) {
-      toast.error(
-        `Play your move first
+  const oponentRolledDice = useCallback(
+    (turn: ThisTurn) => {
+      setIsStartingPlayer(true);
+      if (thisTurn._rolledDice) {
+        toast.error(
+          `Play your move first
           ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
-        toastStyle(thisTurn)
-      );
-      return;
-    }
+          toastStyle(thisTurn)
+        );
+        return;
+      }
 
-    getDiceToast(turn._dices[0], turn._dices[1], turn);
-    if (turn._rolledDice) turn = checkCantMove(game, turn);
+      getDiceToast(turn._dices[0], turn._dices[1], turn);
+      if (turn._rolledDice) turn = checkCantMove(game, turn);
 
-    setThisTurn(turn);
-  }
+      updateTurn(turn);
+    },
+    [thisTurn, game, getDiceToast, checkCantMove]
+  );
 
   function handleDiceRoll(turnJson: string) {
     const turn = JSON.parse(turnJson);
@@ -153,15 +155,15 @@ export default function useGameEvents(username: string, opponent: string) {
       returnedThisTurn = checkCantMove(game, returnedThisTurn);
 
     requestRollDice(username, opponent, JSON.stringify(returnedThisTurn));
-    setThisTurn(returnedThisTurn);
+    updateTurn(returnedThisTurn);
   }
 
   function select(data: string) {
     const { newgame, turn, move } = JSON.parse(data);
 
-    setGame(newgame);
-    setThisTurn(turn);
-    setThisMove(move);
+    updateGame(newgame);
+    updateTurn(turn);
+    updateMove(move);
   }
 
   function turnRanOutOfTime() {
@@ -169,7 +171,7 @@ export default function useGameEvents(username: string, opponent: string) {
     const newTurn = changeTurn(game, thisTurn);
     const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
     const toastMessage = JSON.stringify({ message, turn: thisTurn });
-    setThisTurn(newTurn);
+    updateTurn(newTurn);
     notifyChangeTurn(username, opponent, toastMessage);
   }
 
@@ -197,9 +199,7 @@ export default function useGameEvents(username: string, opponent: string) {
         ...game,
         _gameOn: false,
       };
-      handleUserLeftGameEnd(thisTurn);
-      requestEndGame(username, opponent);
-      setGame(game);
+      handleGameOver(JSON.stringify(newGame), true);
     }
   }
 
@@ -259,6 +259,20 @@ export default function useGameEvents(username: string, opponent: string) {
     setTimer(0);
   }
 
+  function handleGameOver(gameJson: string, isWinner: boolean) {
+    const newGame: Game = JSON.parse(gameJson);
+    updateGame(newGame);
+    const points = isWinner ? getEndGamePoints(newGame, thisTurn) : 0;
+    let message = isWinner ? pointsToGameEndMap[points] : "You lost!";
+    message += " Window will close in 3 seconds.";
+    toast(message, toastStyle(thisTurn));
+    requestEndGame(username, opponent, isWinner, points);
+    updateGame(game);
+    setTimeout(() => {
+      window.close();
+    }, 3000);
+  }
+
   return {
     handleUserJoined,
     handleDiceRoll,
@@ -269,11 +283,9 @@ export default function useGameEvents(username: string, opponent: string) {
     opponentStartedGame,
     isLoading,
     isWaitingForOpponent,
+    handleGameOver,
     timer,
     select,
-    game,
-    thisTurn,
-    thisMove,
     rollDice,
     canPlay,
     isSelecting,
@@ -282,3 +294,22 @@ export default function useGameEvents(username: string, opponent: string) {
   };
 }
 
+function getEndGamePoints(game: Game, thisTurn: ThisTurn): number {
+  debugger;
+  const containing: number[] = [];
+
+  let points = 1;
+  if (thisTurn._turnPlayer._endBar.length < 15) return 1; // if player has pieces in out bar
+  if (thisTurn._opponentPlayer._outBar.length > 0) points += 1; // if opponent has pieces in out bar
+  if (thisTurn._opponentPlayer._endBar.length === 0) points += 1; // if opponent hasn't brought any pieces to end bar
+  if (!thisTurn._opponentPlayer._inTheEnd) points += 1; // if opponent isn't in the end zone
+
+  return points;
+}
+
+const pointsToGameEndMap: Record<number, string> = {
+  1: "You won!",
+  2: "Gammon! You won!",
+  3: "Backgammon! You won!",
+  4: "Super Backgammon! You won!",
+};

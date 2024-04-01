@@ -3,6 +3,9 @@ import {
   existsInMap as existsInUsernameToSocketIdMap,
   getGameId,
 } from "../utils/utils.js";
+import mongoose from "mongoose";
+import fs from "fs";
+import User from "../models/user.js";
 
 export const usernameToSocketIdMap = {};
 
@@ -40,14 +43,62 @@ export async function userJoin(req, res, next) {
   }
 }
 
+// save win/lose to opponent/username in database
+export async function saveGame(req, res, next) {
+  try {
+    console.log("save game");
+    const { username, opponent, isWin, points } = req.body;
+    console.log(req.body);
+    if (!username || !opponent || isWin === undefined || isWin === null)
+      return res.status(404).send("Bad request");
+    let user = await User.findOne({ username: username });
+    if (!user) {
+      user = new User({
+        username: username,
+        stats: {
+          wins: 0,
+          losses: 0,
+          points: 0,
+        },
+      });
+    }
+    let opponentModel = await User.findOne({ username: opponent });
+    if (!opponentModel) {
+      opponentModel = new User({
+        username: opponent,
+        stats: {
+          wins: 0,
+          losses: 0,
+          points: 0,
+        },
+      });
+    }
+    if (!user || !opponentModel) return res.status(404).send("User not found");
+    if (isWin) {
+      user.stats.wins += 1;
+      user.stats.points += points;
+      opponentModel.stats.losses += 1;
+    } else {
+      user.stats.losses += 1;
+      opponentModel.stats.wins += 1;
+    }
+    await user.save();
+    await opponentModel.save();
+    return res.sendStatus(200);
+  } catch (err) {
+    return res.status(500).send("Internal server error");
+  }
+}
+
 export async function endGame(req, res, next) {
   try {
+    console.log("end game");
     const { username, opponent } = req.body;
     if (!username || !opponent) return res.status(404).send("Bad request");
     const gameId = getGameId(username, opponent);
     console.log("exiting " + gameId);
     delete openGames[gameId];
-    return res.sendStatus(200);
+    next();
   } catch (err) {
     return res.status(500).send("Internal server error");
   }
@@ -159,6 +210,18 @@ export async function getFirstPlayer(req, res, next) {
     const result = chance > 50 ? players[0] : players[1];
     setFirstPlayer(gameId, result);
     return res.status(200).json({ result });
+  } catch (err) {
+    return res.status(500).send("Internal server error");
+  }
+}
+
+export async function getUserDetails(req, res, next) {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ username: username });
+    console.log(user);
+    if (!user) return res.status(404).send("User not found");
+    return res.status(200).json({ user });
   } catch (err) {
     return res.status(500).send("Internal server error");
   }

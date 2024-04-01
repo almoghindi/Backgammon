@@ -4,7 +4,11 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import gameRoutes from "./routes/game.routes.js";
-import { usernameToSocketIdMap, openGames } from "./controllers/game.controller.js";
+import {
+  usernameToSocketIdMap,
+  openGames,
+} from "./controllers/game.controller.js";
+import mongoose from "mongoose";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -54,8 +58,13 @@ export function socketEmit(eventName, data, to) {
 }
 
 io.on("connection", (socket) => {
+  socket.on("game-win", (data) => {
+    socket.emit("on-game-won", data);
+  });
   socket.on("disconnect", () => {
-    const leavingUser = Object.keys(usernameToSocketIdMap).find(username => usernameToSocketIdMap[username] === socket.id);
+    const leavingUser = Object.keys(usernameToSocketIdMap).find(
+      (username) => usernameToSocketIdMap[username] === socket.id
+    );
     io.emit("user-disconnected", leavingUser);
   });
 });
@@ -64,5 +73,9 @@ io.on("disconnect", () => {
   console.log("disconnected io");
 });
 
-
-socketServer.listen(process.env.GAME_PORT || 3003);
+mongoose
+  .connect(process.env.MONGO_URI + "-Game")
+  .then(() => {
+    socketServer.listen(process.env.GAME_PORT || 3003);
+  })
+  .catch((err) => console.log(err));

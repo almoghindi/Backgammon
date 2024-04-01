@@ -20,6 +20,7 @@ export function selecting(
   thisTurn: ThisTurn,
   thisMove: ThisMove
 ): [Game, ThisTurn, ThisMove] {
+  debugger;
   const newMove = () => new ThisMove();
 
   if (!game._gameOn) {
@@ -219,7 +220,6 @@ export function settingToBar(
 ): ThisTurn {
   thisMove._toBarIdx = index;
   movingPiece(game, thisTurn, thisMove);
-
   thisTurn = calcMovesMade(thisTurn, thisMove);
 
   return thisTurn;
