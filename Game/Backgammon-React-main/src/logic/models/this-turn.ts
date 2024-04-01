@@ -65,6 +65,46 @@ export default class ThisTurn {
     this._maxMoves = value;
   }
 
+  public toJSON() {
+    return JSON.stringify({
+      _rolledDice: this._rolledDice,
+      _maxMoves: this._maxMoves,
+      _movesMade: this._movesMade,
+      _turnPlayer: this._turnPlayer.toJSON(),
+      _opponentPlayer: this._opponentPlayer.toJSON(),
+      _dices: this._dices,
+      _beginning: this._beginning,
+    });
+  }
+
+  // Ensure the object can be reconstructed from a plain object
+  public static fromJSON(json: string) {
+    console.log("turn json", json);
+    try {
+      let parsed = JSON.parse(json);
+      if (typeof parsed === "string") {
+        parsed = JSON.parse(parsed);
+      }
+      const { _turnPlayer, _opponentPlayer, _dices, _beginning, ...rest } =
+        parsed;
+      const turn = new ThisTurn(
+        Player.fromJSON(_turnPlayer),
+        Player.fromJSON(_opponentPlayer),
+        _dices,
+        _beginning
+      );
+      return {
+        _turnPlayer: turn._turnPlayer,
+        _opponentPlayer: turn._opponentPlayer,
+        _dices: turn._dices,
+        _beginning: turn._beginning,
+        ...rest,
+      };
+    } catch (err) {
+      console.error(err);
+      return new ThisTurn(Player.new(), Player.new(), [], false);
+    }
+  }
   public clone() {
     const newThisTurn = new ThisTurn(
       this._turnPlayer,

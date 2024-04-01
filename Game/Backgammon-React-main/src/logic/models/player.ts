@@ -63,6 +63,53 @@ export default class Player {
     return this._pieceBorderColor;
   }
 
+  public toJSON() {
+    return JSON.stringify({
+      _name: this._name,
+      _icon: this._icon,
+      _outBarIdx: this._outBarIdx,
+      _endBarIdx: this._endBarIdx,
+      _pieceColor: this._pieceColor,
+      _pieceBorderColor: this._pieceBorderColor,
+      _outBar: this._outBar,
+      _endBar: this._endBar,
+      _inTheEnd: this._inTheEnd,
+    });
+  }
+
+  public static fromJSON(json: string) {
+    console.log("player json", json);
+    try {
+      const {
+        _name,
+        _icon,
+        _outBarIdx,
+        _endBarIdx,
+        _pieceColor,
+        _pieceBorderColor,
+        _outBar,
+        _endBar,
+        _inTheEnd,
+      } = JSON.parse(json);
+
+      const player = new Player(
+        _name,
+        _icon,
+        _outBarIdx,
+        _endBarIdx,
+        _pieceColor,
+        _pieceBorderColor
+      );
+      player._outBar = _outBar;
+      player._endBar = _endBar;
+      player._inTheEnd = _inTheEnd;
+      return player;
+    } catch (error) {
+      console.error(error);
+      return Player.new();
+    }
+  }
+
   public clone() {
     const newPlayer = new Player(
       this._name,
@@ -73,9 +120,9 @@ export default class Player {
       this._pieceBorderColor
     );
 
-    newPlayer.outBar = [...this.outBar];
-    newPlayer.endBar = [...this.endBar];
-    newPlayer.inTheEnd = this._inTheEnd;
+    newPlayer._outBar = [...this.outBar];
+    newPlayer._endBar = [...this.endBar];
+    newPlayer._inTheEnd = this._inTheEnd;
 
     return newPlayer;
   }

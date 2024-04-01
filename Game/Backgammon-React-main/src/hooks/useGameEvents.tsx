@@ -20,6 +20,16 @@ import { checkCantMove } from "../logic/calculations/calc-possible-moves";
 import { changeTurn } from "../logic/events/change-turn";
 import { handleUserLeftGameEnd } from "../logic/events/end-game";
 import { selecting } from "../logic/events/select";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setIsSelecting,
+  setIsStartingPlayer,
+  setIsWaitingForOpponent,
+  setPlayer,
+} from "../state/slices/playerSlice";
+import { RootState } from "../state/store";
+import { setGame, setThisMove, setThisTurn } from "../state/slices/gameSlice";
+import { json } from "react-router-dom";
 
 interface GameObjectModel {
   game: Game;
@@ -28,38 +38,61 @@ interface GameObjectModel {
   isStarting: boolean;
 }
 
-
 export default function useGameEvents(username: string, opponent: string) {
-  const [game, setGame, thisTurn, setThisTurn, thisMove, setThisMove] =
-    useGameState();
-  const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(true);
-  const [player, setPlayer] = useState<string>("");
-  const [isSelecting, setIsSelecting] = useState<boolean>(false);
-  const [isStartingPlayer, setIsStartingPlayer] = useState(false);
-  const [timer, setTimer] = useTimer();
+  const gameSlice = useSelector((state: RootState) => state.game);
+
+  const game: Game = useMemo(() => {
+    const temp = Game.fromJSON(gameSlice.game);
+    if (temp === null) throw new Error("Game is null");
+    return temp;
+  }, [gameSlice.game]);
+
+  const thisTurn: ThisTurn = useMemo(() => {
+    return ThisTurn.fromJSON(gameSlice.thisTurn);
+  }, [gameSlice.thisTurn]);
+
+  const thisMove: ThisMove = useMemo(() => {
+    return JSON.parse(gameSlice.thisMove);
+  }, [gameSlice.thisMove]);
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const { player, isSelecting, isStartingPlayer, isWaitingForOpponent } =
+    useSelector((state: any) => state.player);
+  const dispatch = useDispatch();
 
   const canPlay: boolean = useMemo(() => {
     return player === thisTurn._turnPlayer._name && isStartingPlayer;
   }, [thisTurn, player, isStartingPlayer]);
 
+  function consolelog() {
+    console.log("game", game);
+    console.log("thisTurn", thisTurn);
+    console.log("thisMove", thisMove);
+    console.log("player", player);
+    console.log("isSelecting", isSelecting);
+    console.log("isStartingPlayer", isStartingPlayer);
+    console.log("isWaitingForOpponent", isWaitingForOpponent);
+    console.log("canPlay", canPlay);
+  }
+
   async function startGame() {
     const tempGame = Game.new();
     tempGame._gameOn = true;
-    setGame(tempGame);
+    dispatch(setGame(tempGame.toJSON()));
 
     const tempThisTurn = startingGame(game);
     const startingUser = await getStartingPlayer(username, opponent);
 
     const isStarting = startingUser === username;
-    setIsStartingPlayer(isStarting);
+    dispatch(setIsStartingPlayer(isStarting));
 
     let turn;
     if (isStarting) {
-      setPlayer(tempThisTurn._turnPlayer._name);
+      dispatch(setPlayer(tempThisTurn._turnPlayer._name));
       turn = tempThisTurn;
     } else {
-      setPlayer(tempThisTurn._opponentPlayer._name);
+      dispatch(setPlayer(tempThisTurn._opponentPlayer._name));
       turn = new ThisTurn(
         tempThisTurn._opponentPlayer,
         tempThisTurn._turnPlayer,
@@ -67,10 +100,10 @@ export default function useGameEvents(username: string, opponent: string) {
         false
       );
     }
-    setThisTurn(turn);
+    dispatch(setThisTurn(turn.toJSON()));
 
     const tempThisMove = ThisMove.new();
-    setThisMove(tempThisMove);
+    dispatch(setThisMove(JSON.stringify(tempThisMove)));
     const result: GameObjectModel = {
       game: tempGame,
       turn,
@@ -81,22 +114,23 @@ export default function useGameEvents(username: string, opponent: string) {
   }
 
   function opponentStartedGame(gameJson: string) {
-    setIsWaitingForOpponent(false);
+    dispatch(setIsWaitingForOpponent(false));
     const result = JSON.parse(gameJson);
-    const { game, turn, move, isStarting } = result;
+    const { game: newGame, turn, move, isStarting } = result;
+    let parsedTurn = ThisTurn.fromJSON(turn);
     const newTurn = new ThisTurn(
-      turn._opponentPlayer,
-      turn._turnPlayer,
-      [],
-      false
+      parsedTurn._opponentPlayer,
+      parsedTurn._turnPlayer,
+      turn._dices,
+      turn._rolledDice
     );
 
-    setIsStartingPlayer(isStarting);
+    dispatch(setIsStartingPlayer(isStarting));
 
-    setPlayer(turn._opponentPlayer._name);
-    setGame(game);
-    setThisTurn(newTurn);
-    setThisMove(move);
+    dispatch(setPlayer(parsedTurn._opponentPlayer._name));
+    dispatch(setGame(newGame));
+    dispatch(setThisTurn(newTurn.toJSON()));
+    dispatch(setThisMove(JSON.stringify(move)));
     const toastmessageJSON = JSON.stringify({
       message: isStarting
         ? `You start!`
@@ -113,11 +147,11 @@ export default function useGameEvents(username: string, opponent: string) {
   }
 
   function oponentRolledDice(turn: ThisTurn) {
-    setIsStartingPlayer(true);
+    dispatch(setIsStartingPlayer(true));
     if (thisTurn._rolledDice) {
       toast.error(
         `Play your move first
-          ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
+          ${thisTurn._turnPlayer._icon} 🎲 ${thisTurn._dices} 🎲`,
         toastStyle(thisTurn)
       );
       return;
@@ -126,24 +160,24 @@ export default function useGameEvents(username: string, opponent: string) {
     getDiceToast(turn._dices[0], turn._dices[1], turn);
     if (turn._rolledDice) turn = checkCantMove(game, turn);
 
-    setThisTurn(turn);
+    dispatch(setThisTurn(turn.toJSON()));
   }
 
   function handleDiceRoll(turnJson: string) {
-    const turn = JSON.parse(turnJson);
+    const turn = ThisTurn.fromJSON(turnJson);
     oponentRolledDice(turn);
   }
 
   async function handleUserJoined() {
-    setIsWaitingForOpponent(false);
+    dispatch(setIsWaitingForOpponent(false));
     const gameObj: GameObjectModel = await startGame();
     await requestStartGame(username, opponent, JSON.stringify(gameObj));
   }
   function rollDice() {
-    if (thisTurn.rolledDice) {
+    if (thisTurn._rolledDice) {
       toast.error(
         `Play your move first
-          ${thisTurn.turnPlayer.icon} 🎲 ${thisTurn.dices} 🎲`,
+          ${thisTurn._turnPlayer._icon} 🎲 ${thisTurn._dices} 🎲`,
         toastStyle(thisTurn)
       );
       return;
@@ -153,60 +187,50 @@ export default function useGameEvents(username: string, opponent: string) {
       returnedThisTurn = checkCantMove(game, returnedThisTurn);
 
     requestRollDice(username, opponent, JSON.stringify(returnedThisTurn));
-    setThisTurn(returnedThisTurn);
+    dispatch(setThisTurn(returnedThisTurn.toJSON()));
   }
 
   function select(data: string) {
     const { newgame, turn, move } = JSON.parse(data);
-
-    setGame(newgame);
-    setThisTurn(turn);
-    setThisMove(move);
+    const parsedTurn: ThisTurn = ThisTurn.fromJSON(JSON.stringify(turn));
+    const newTurn = new ThisTurn(
+      parsedTurn._turnPlayer,
+      parsedTurn._opponentPlayer,
+      parsedTurn._dices,
+      parsedTurn._rolledDice
+    );
+    dispatch(setGame(newgame));
+    dispatch(setThisTurn(newTurn.toJSON()));
+    dispatch(setThisMove(JSON.stringify(move)));
   }
 
   function turnRanOutOfTime() {
-    setIsSelecting(false);
+    dispatch(setIsSelecting(false));
     const newTurn = changeTurn(game, thisTurn);
     const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
     const toastMessage = JSON.stringify({ message, turn: thisTurn });
-    setThisTurn(newTurn);
+    dispatch(setThisTurn(newTurn.toJSON()));
     notifyChangeTurn(username, opponent, toastMessage);
   }
-
-  useEffect(() => {
-    if (timer === 0) {
-      if (!game._gameOn) return;
-      turnRanOutOfTime();
-      setTimer(119);
-    }
-  }, [timer]);
-
-  useEffect(() => {
-    if (!game._gameOn) setTimer(0);
-  }, [game._gameOn]);
-
-  useEffect(() => {
-    setTimer(119);
-  }, [thisMove]);
 
   function handleOpponentLeft(leavingUser: string) {
     if (leavingUser === opponent) {
       toast.error("Opponent left the game", toastStyle(thisTurn));
-      setTimer(0);
       const newGame = {
         ...game,
         _gameOn: false,
       };
       handleUserLeftGameEnd(thisTurn);
       requestEndGame(username, opponent);
-      setGame(game);
+      dispatch(setGame(game.toJSON()));
     }
   }
 
   async function handleUserSelect(index: number | string) {
-    setIsStartingPlayer(true);
+    debugger;
+    dispatch(setIsStartingPlayer(true));
     if (!canPlay) return;
-    setIsSelecting(true);
+    dispatch(setIsSelecting(true));
     const memoizedGame = {
       newgame: { ...game },
       turn: { ...thisTurn },
@@ -230,7 +254,7 @@ export default function useGameEvents(username: string, opponent: string) {
       gameJSON
     );
     if (!requestSuccessful) {
-      setIsSelecting(false);
+      dispatch(setIsSelecting(false));
       select(JSON.stringify(memoizedGame));
       toast.error("Network failed, try again");
     } else {
@@ -243,7 +267,7 @@ export default function useGameEvents(username: string, opponent: string) {
         notifyChangeTurn(username, opponent, toastMessage);
       }
       if (!returnedThisTurn._rolledDice) {
-        setIsSelecting(false);
+        dispatch(setIsSelecting(false));
       }
       select(gameJSON);
     }
@@ -252,11 +276,11 @@ export default function useGameEvents(username: string, opponent: string) {
 
   function handleOpponentSelect(json: string) {
     select(json);
-    const { newgame } = JSON.parse(json);
+    const obj = JSON.parse(json);
+    const newgame = Game.fromJSON(obj.newgame);
+    if (newgame === null) throw new Error("Game is null");
     if (newgame._gameOn) return;
-    debugger;
     toast("You lost!", toastStyle(thisTurn));
-    setTimer(0);
   }
 
   return {
@@ -269,11 +293,8 @@ export default function useGameEvents(username: string, opponent: string) {
     opponentStartedGame,
     isLoading,
     isWaitingForOpponent,
-    timer,
+    turnRanOutOfTime,
     select,
-    game,
-    thisTurn,
-    thisMove,
     rollDice,
     canPlay,
     isSelecting,
@@ -281,4 +302,3 @@ export default function useGameEvents(username: string, opponent: string) {
     isStartingPlayer,
   };
 }
-

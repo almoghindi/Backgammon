@@ -6,7 +6,6 @@ import BoardTop from "./frontend/BoardTop";
 import { useParams } from "react-router-dom";
 import LoadingPage from "./frontend/components/loading/LoadingPage";
 import Timer from "./frontend/components/timer/Timer";
-// import { joinGame } from "./http/requests";
 import LoadingSpinner from "./frontend/components/loading/LoadingSpinner";
 import useGameEvents from "./hooks/useGameEvents";
 import { toastMessage } from "./utils/functions";
@@ -14,6 +13,12 @@ import toast from "react-hot-toast";
 import { Button } from "@mui/material";
 import { useHttpClient } from "./http/useHttp";
 import Dice from "./frontend/components/Dice/Dice";
+import { useSelector } from "react-redux";
+import { RootState } from "./state/store";
+import Game from "./logic/models/game";
+import ThisTurn from "./logic/models/this-turn";
+import ThisMove from "./logic/models/this-move";
+import useTimer from "./frontend/components/timer/useTimer";
 
 function App() {
   const { users } = useParams();
@@ -26,25 +31,54 @@ function App() {
   }, [users]);
   const { joinGame } = useHttpClient();
 
+  const { player, isSelecting, isWaitingForOpponent } = useSelector(
+    (state: RootState) => state.player
+  );
+  const gameSlice = useSelector((state: RootState) => state.game);
+
+  const game: Game = useMemo(() => {
+    const temp = Game.fromJSON(gameSlice.game);
+    if (temp === null) throw new Error("Game is null");
+    return temp;
+  }, [gameSlice.game]);
+
+  const thisTurn: ThisTurn = useMemo(() => {
+    return ThisTurn.fromJSON(gameSlice.thisTurn);
+  }, [gameSlice.thisTurn]);
+
+  const thisMove: ThisMove = useMemo(() => {
+    return JSON.parse(gameSlice.thisMove);
+  }, [gameSlice.thisMove]);
+
   const {
     handleUserJoined,
     handleDiceRoll,
     handleOpponentSelect,
     handleUserStartedGame,
+    turnRanOutOfTime,
     opponentStartedGame,
     handleOpponentLeft,
     handleUserSelect,
     rollDice,
-    timer,
-    game,
-    thisTurn,
     isLoading,
-    isWaitingForOpponent,
-    thisMove,
     canPlay,
-    isSelecting,
-    player,
   } = useGameEvents(username, opponent);
+  const [timer, setTimer] = useTimer();
+  useEffect(() => {
+    if (timer === 0) {
+      if (!game._gameOn) return;
+      turnRanOutOfTime();
+      setTimer(119);
+    }
+  }, [timer]);
+
+  useEffect(() => {
+    if (!game._gameOn) setTimer(0);
+  }, [game._gameOn]);
+
+  useEffect(() => {
+    setTimer(119);
+  }, [thisMove]);
 
   useEffect(() => {
     async function tryJoin() {
@@ -57,6 +91,8 @@ function App() {
     }
     tryJoin();
   }, [socket.id]);
+
+
 
   useEffect(() => {
     socket.on("user-connection", handleUserJoined);
@@ -85,7 +121,8 @@ function App() {
         <div>
           <div className="header">
             <h1>
-              You play as <span className={player}>{player}</span>
+              You play as{" "}
+              <span className={player === null ? "" : player}>{player}</span>
             </h1>
             <div className="dice">
               {thisTurn._dices && canPlay && (

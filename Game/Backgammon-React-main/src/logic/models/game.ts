@@ -84,13 +84,53 @@ export default class Game {
     this._blackPlayer = value;
   }
 
+  public toJSON() {
+    return JSON.stringify({
+      _gameOn: this._gameOn,
+      _board: this._board,
+      _whitePlayer: this._whitePlayer.toJSON(), // Serialize whitePlayer object
+      _blackPlayer: this._blackPlayer.toJSON(), // Serialize blackPlayer object
+    });
+  }
+
+  // Deserialize plain object to Game object
+  public static fromJSON(json: string) {
+    try {
+      console.log("game json", json);
+
+      const { _gameOn, _board, _whitePlayer, _blackPlayer } = JSON.parse(json);
+
+      if (
+        typeof _gameOn !== "boolean" ||
+        !Array.isArray(_board) ||
+        typeof _whitePlayer !== "string" ||
+        typeof _blackPlayer !== "string"
+      ) {
+        throw new Error("Invalid JSON format");
+      }
+
+      if (!_whitePlayer || !_blackPlayer) {
+        throw new Error("Invalid player data");
+      }
+
+      const game = new Game();
+      game._gameOn = _gameOn;
+      game._board = _board;
+      game._whitePlayer = Player.fromJSON(_whitePlayer);
+      game._blackPlayer = Player.fromJSON(_blackPlayer);
+      return game;
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return null;
+    }
+  }
+
   public clone() {
     const newGame = new Game();
     newGame.gameOn = this._gameOn;
     newGame._board = [...this._board];
     newGame.whitePlayer = this._whitePlayer.clone();
     newGame.blackPlayer = this.blackPlayer.clone();
-
     return newGame;
   }
 }
