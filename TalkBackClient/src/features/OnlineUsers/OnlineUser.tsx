@@ -52,11 +52,13 @@ const OnlineUser: React.FC<OnlineUserProps> = ({
       }
     });
 
-    onlineUsersSocket.on("accept-invite", () => {
-      setOpenGameInvitingModal(false);
-      window.open(
-        `http://localhost:5174/game/${auth.username}&${username}?token=${auth.token}`
-      );
+    onlineUsersSocket.on("accept-invite", (to) => {
+      if (username == to) {
+        setOpenGameInvitingModal(false);
+        window.open(
+          `http://localhost:5174/game/${auth.username}&${username}?token=${auth.token}`
+        );
+      }
     });
 
     return () => {

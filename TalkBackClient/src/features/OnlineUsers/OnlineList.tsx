@@ -40,7 +40,7 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
   };
 
   const handleAcceptGame = () => {
-    onlineUsersSocket.emit("invite-accepted", fromUsername);
+    onlineUsersSocket.emit("invite-accepted", fromUsername, auth.username);
     window.open(
       `http://localhost:5174/game/${auth.username}&${fromUsername}?token=${auth.token}`
     );
@@ -101,7 +101,7 @@ const OnlineUsersList: React.FC<OnlineUsersList> = ({
 
   useEffect(() => {
     const messageRegex = /^(.+) sent you a message$/;
-    let match = notification.match(messageRegex);
+    const match = notification.match(messageRegex);
 
     if (match) {
       setMessageFrom(match[1]);
