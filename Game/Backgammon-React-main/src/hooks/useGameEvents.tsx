@@ -28,9 +28,8 @@ interface GameObjectModel {
   isStarting: boolean;
 }
 
-
 export default function useGameEvents(username: string, opponent: string) {
-  const [game, setGame, thisTurn, setThisTurn, thisMove, setThisMove] =
+  const { game, updateGame, thisTurn, updateTurn, thisMove, updateMove } =
     useGameState();
   const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(true);
   const [player, setPlayer] = useState<string>("");
@@ -46,7 +45,7 @@ export default function useGameEvents(username: string, opponent: string) {
   async function startGame() {
     const tempGame = Game.new();
     tempGame._gameOn = true;
-    setGame(tempGame);
+    updateGame(tempGame);
 
     const tempThisTurn = startingGame(game);
     const startingUser = await getStartingPlayer(username, opponent);
@@ -67,10 +66,10 @@ export default function useGameEvents(username: string, opponent: string) {
         false
       );
     }
-    setThisTurn(turn);
+    updateTurn(turn);
 
     const tempThisMove = ThisMove.new();
-    setThisMove(tempThisMove);
+    updateMove(tempThisMove);
     const result: GameObjectModel = {
       game: tempGame,
       turn,
@@ -94,9 +93,9 @@ export default function useGameEvents(username: string, opponent: string) {
     setIsStartingPlayer(isStarting);
 
     setPlayer(turn._opponentPlayer._name);
-    setGame(game);
-    setThisTurn(newTurn);
-    setThisMove(move);
+    updateGame(game);
+    updateTurn(newTurn);
+    updateMove(move);
     const toastmessageJSON = JSON.stringify({
       message: isStarting
         ? `You start!`
@@ -126,7 +125,7 @@ export default function useGameEvents(username: string, opponent: string) {
     getDiceToast(turn._dices[0], turn._dices[1], turn);
     if (turn._rolledDice) turn = checkCantMove(game, turn);
 
-    setThisTurn(turn);
+    updateTurn(turn);
   }
 
   function handleDiceRoll(turnJson: string) {
@@ -153,15 +152,15 @@ export default function useGameEvents(username: string, opponent: string) {
       returnedThisTurn = checkCantMove(game, returnedThisTurn);
 
     requestRollDice(username, opponent, JSON.stringify(returnedThisTurn));
-    setThisTurn(returnedThisTurn);
+    updateTurn(returnedThisTurn);
   }
 
   function select(data: string) {
     const { newgame, turn, move } = JSON.parse(data);
 
-    setGame(newgame);
-    setThisTurn(turn);
-    setThisMove(move);
+    updateGame(newgame);
+    updateTurn(turn);
+    updateMove(move);
   }
 
   function turnRanOutOfTime() {
@@ -169,7 +168,7 @@ export default function useGameEvents(username: string, opponent: string) {
     const newTurn = changeTurn(game, thisTurn);
     const message = `Turn is now ${thisTurn._opponentPlayer._icon}`;
     const toastMessage = JSON.stringify({ message, turn: thisTurn });
-    setThisTurn(newTurn);
+    updateTurn(newTurn);
     notifyChangeTurn(username, opponent, toastMessage);
   }
 
@@ -199,7 +198,7 @@ export default function useGameEvents(username: string, opponent: string) {
       };
       handleUserLeftGameEnd(thisTurn);
       requestEndGame(username, opponent);
-      setGame(game);
+      updateGame(game);
     }
   }
 
@@ -281,4 +280,3 @@ export default function useGameEvents(username: string, opponent: string) {
     isStartingPlayer,
   };
 }
-

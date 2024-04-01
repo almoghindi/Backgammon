@@ -6,7 +6,6 @@ import BoardTop from "./frontend/BoardTop";
 import { useParams } from "react-router-dom";
 import LoadingPage from "./frontend/components/loading/LoadingPage";
 import Timer from "./frontend/components/timer/Timer";
-// import { joinGame } from "./http/requests";
 import LoadingSpinner from "./frontend/components/loading/LoadingSpinner";
 import useGameEvents from "./hooks/useGameEvents";
 import { toastMessage } from "./utils/functions";
@@ -14,6 +13,7 @@ import toast from "react-hot-toast";
 import { Button } from "@mui/material";
 import { useHttpClient } from "./http/useHttp";
 import Dice from "./frontend/components/Dice/Dice";
+import useGameState from "./hooks/useGameState";
 
 function App() {
   const { users } = useParams();
@@ -26,6 +26,8 @@ function App() {
   }, [users]);
   const { joinGame } = useHttpClient();
 
+  const { game, thisTurn, thisMove } = useGameState();
+
   const {
     handleUserJoined,
     handleDiceRoll,
@@ -36,11 +38,8 @@ function App() {
     handleUserSelect,
     rollDice,
     timer,
-    game,
-    thisTurn,
     isLoading,
     isWaitingForOpponent,
-    thisMove,
     canPlay,
     isSelecting,
     player,
