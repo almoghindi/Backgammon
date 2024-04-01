@@ -74,7 +74,7 @@ const Notification: React.FC<NotificationProps> = ({
     socket.on("push-message", (message: string) => {
       const messageRegex = /^(.+) sent you a message$/;
 
-      let match = message.match(messageRegex);
+      const match = message.match(messageRegex);
       let username = "";
       if (match) {
         username = match[1];

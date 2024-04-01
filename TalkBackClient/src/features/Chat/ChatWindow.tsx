@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { chatSocket as socket } from "../../utils/socketConnection";
 import { AuthContext } from "../../context/auth-context";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
-import { Container, Divider, Typography } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import ChatInput from "../../components/Chat/ChatInput/ChatInput.tsx";
 import MessageModel from "../../types/message.model.tsx";
 import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
@@ -109,7 +109,7 @@ export default function ChatWindow(props: Props) {
         );
         if (!response) throw new Error("enter chat failed");
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       }
     },
     [token, chatBuddyUsername]
@@ -163,7 +163,7 @@ export default function ChatWindow(props: Props) {
   return (
     <>
       {isLoadingMessages && <LoadingSpinner />}
-      <div style={{backgroundColor: "#787878"}}>
+      <div style={{ backgroundColor: "#787878" }}>
         <div className="chat-window-header">
           <Typography>Chat with: {chatBuddyUsername}</Typography>
         </div>
