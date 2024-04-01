@@ -25,12 +25,16 @@ const GameInviting: React.FC<GameInviteProps> = ({
         <Box sx={{ mt: 2, display: "flex", justifyContent: "space-around" }}>
           <Button
             variant="contained"
-            sx={{ bgcolor: "green" }}
+            sx={{ bgcolor: "#087CA7" }}
             onClick={onAccept}
           >
             Accept
           </Button>
-          <Button variant="contained" sx={{ bgcolor: "red" }} onClick={onClose}>
+          <Button
+            variant="contained"
+            sx={{ bgcolor: "#C2948A" }}
+            onClick={onClose}
+          >
             Deny
           </Button>
         </Box>

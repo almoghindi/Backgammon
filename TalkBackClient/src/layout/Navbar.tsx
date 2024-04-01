@@ -3,7 +3,7 @@ import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import { useHttpClient } from "../hooks/useHttp";
 import { AuthContext } from "../context/auth-context";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo2.png";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { onlineUsersSocket as socket } from "../utils/socketConnection";
 
@@ -27,12 +27,13 @@ const NavBar: React.FC = () => {
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      <AppBar position="static">
+      <AppBar position="static" sx={{ backgroundColor: `#7EA8BE` }}>
         <Toolbar>
-          <img src={logo} alt="Logo" style={{ maxWidth: 100 }} />
-          <Typography variant="h6" sx={{ flexGrow: 1, color: "orange" }}>
-            Backgammon
-          </Typography>
+          <img src={logo} alt="Logo" style={{ maxWidth: 60, margin: "1em" }} />
+          <div style={{ flexGrow: 1, color: "#F6F0ED" }}>
+            <Typography variant="h5">Talkback</Typography>
+            <Typography>Online backgammon</Typography>
+          </div>
           <IconButton color="inherit" onClick={handleLogout}>
             <PowerSettingsNewIcon />
           </IconButton>

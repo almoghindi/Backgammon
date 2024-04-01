@@ -113,8 +113,17 @@ function App() {
             canPlay={canPlay}
             isSelecting={isSelecting}
           />
-          <div>
-            <Button className="" onClick={() => window.close()}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              margin: "1em",
+            }}
+          >
+            <Button
+              style={{ backgroundColor: "#904E55", color: "#fff" }}
+              onClick={() => window.close()}
+            >
               Quit game
             </Button>
           </div>

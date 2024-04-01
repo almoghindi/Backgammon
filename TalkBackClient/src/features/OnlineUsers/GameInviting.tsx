@@ -24,7 +24,11 @@ const GameInviting: React.FC<GameInviteProps> = ({
           Clicking outside the popup will cancel the invite
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-          <Button onClick={onClose} variant="contained">
+          <Button
+            onClick={onClose}
+            variant="contained"
+            sx={{ backgroundColor: "#C2948A" }}
+          >
             Cancel
           </Button>
         </Box>

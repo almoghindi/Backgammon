@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Container, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 import backgammon from "../../assets/backgammon1.jpg";
 
@@ -24,36 +24,51 @@ const UserDetails = (props: { username: string }) => {
   const { username } = props;
   const { sendRequest } = useHttpClient();
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const responseData = await sendRequest<UserDetailsResponse>(
-          `http://localhost:3003/api/game/user-details/${username}`
-        );
-        if (responseData && responseData.user) {
-          setUserDetails(responseData.user);
-        } else {
-          throw new Error("No response data");
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          if (err.response?.status === 404) {
-            setUserDetails({
-              username,
-              stats: {
-                wins: 0,
-                losses: 0,
-                points: 0,
-              },
-            });
-          }
-        }
-        console.log(err);
+  const fetchUserDetails = useCallback(async () => {
+    try {
+      const responseData = await sendRequest<UserDetailsResponse>(
+        `http://localhost:3003/api/game/user-details/${username}`
+      );
+      if (responseData && responseData.user) {
+        setUserDetails(responseData.user);
+      } else {
+        throw new Error("No response data");
       }
-    };
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404) {
+          setUserDetails({
+            username,
+            stats: {
+              wins: 0,
+              losses: 0,
+              points: 0,
+            },
+          });
+        }
+      }
+      console.log(err);
+    }
+  }, [sendRequest, username]);
 
+  useEffect(() => {
     fetchUserDetails();
   }, [username]);
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        fetchUserDetails();
+      }
+    });
+    return () => {
+      document.removeEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          fetchUserDetails();
+        }
+      });
+    };
+  }, []);
 
   if (!userDetails) {
     return <LoadingSpinner />;
@@ -62,7 +77,9 @@ const UserDetails = (props: { username: string }) => {
     <Container sx={{ width: "max-content" }}>
       <img src={backgammon} alt="backgammon" style={{ height: "300px" }} />
       <Typography variant="h3">{userDetails.username}</Typography>
-      <Typography variant="h5">General Score: {userDetails.stats.points}</Typography>
+      <Typography variant="h5">
+        General Score: {userDetails.stats.points}
+      </Typography>
       <Typography>
         W/L {userDetails.stats.wins}/{userDetails.stats.losses}
       </Typography>

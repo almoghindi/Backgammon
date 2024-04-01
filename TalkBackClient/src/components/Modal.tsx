@@ -22,7 +22,7 @@ const GameModal: React.FC<GameModalProps> = ({
     left: "50%",
     transform: "translate(-50%, -50%)",
     width: 400,
-    bgcolor: "darkblue",
+    bgcolor: "#429EA6",
     boxShadow: 24,
     p: 4,
     borderRadius: 2,
