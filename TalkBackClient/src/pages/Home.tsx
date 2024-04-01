@@ -33,10 +33,19 @@ const HomePage: React.FC = () => {
         userWithOpenChat={openChat}
       />
       <Container
-        sx={{ display: "flex", width: "100vw", padding: "0", marginTop: "5%" }}
+        sx={{
+          display: "flex",
+          width: "100vw",
+          padding: "0",
+          marginTop: "2%",
+          overflowY: "auto",
+        }}
       >
         <UserDetails username={username} />
         <Container>
+          <Typography variant="h5" align="left" gutterBottom>
+            Users
+          </Typography>
           <OnlineList
             notification={notificationMessage}
             onChatOpen={handleOpenChat}
