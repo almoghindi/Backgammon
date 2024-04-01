@@ -8,6 +8,7 @@ import {
   select,
   endGame,
   saveGame,
+  getUserDetails,
 } from "../controllers/game.controller.js";
 import { auth } from "../middlewares/auth.js";
 
@@ -20,5 +21,6 @@ router.post("/roll-dice", rollDice);
 router.post("/notify-change-turn", notifyChangeTurn);
 router.post("/select", select);
 router.post("/end-game", endGame, saveGame);
+router.get("/user-details/:username", getUserDetails);
 
 export default router;

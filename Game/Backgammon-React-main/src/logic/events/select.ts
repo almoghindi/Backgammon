@@ -20,6 +20,7 @@ export function selecting(
   thisTurn: ThisTurn,
   thisMove: ThisMove
 ): [Game, ThisTurn, ThisMove] {
+  debugger;
   const newMove = () => new ThisMove();
 
   if (!game._gameOn) {

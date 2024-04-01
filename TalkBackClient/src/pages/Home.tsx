@@ -5,8 +5,9 @@ import OnlineList from "../features/OnlineUsers/OnlineList";
 import OfflineList from "../features/OnlineUsers/OfflineList";
 import Notification from "../features/OnlineUsers/Notification";
 import { AuthContext } from "../context/auth-context";
-import { Typography } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import { onlineUsersSocket } from "../utils/socketConnection";
+import UserDetails from "../features/UserDetails/userDetails";
 const HomePage: React.FC = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [openChat, setOpenChat] = useState("");
@@ -27,16 +28,22 @@ const HomePage: React.FC = () => {
   return (
     <>
       <NavBar />
-      <Typography textAlign={"center"}>Playing as: {username}</Typography>
       <Notification
         onNotification={handleNotification}
         userWithOpenChat={openChat}
       />
-      <OnlineList
-        notification={notificationMessage}
-        onChatOpen={handleOpenChat}
-      />
-      <OfflineList notification={notificationMessage} />
+      <Container
+        sx={{ display: "flex", width: "100vw", padding: "0", marginTop: "5%" }}
+      >
+        <UserDetails username={username} />
+        <Container>
+          <OnlineList
+            notification={notificationMessage}
+            onChatOpen={handleOpenChat}
+          />
+          <OfflineList notification={notificationMessage} />
+        </Container>
+      </Container>
       <Footer />
     </>
   );

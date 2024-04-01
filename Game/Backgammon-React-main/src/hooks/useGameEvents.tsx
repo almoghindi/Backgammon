@@ -295,6 +295,7 @@ export default function useGameEvents(username: string, opponent: string) {
 }
 
 function getEndGamePoints(game: Game, thisTurn: ThisTurn): number {
+  debugger;
   const containing: number[] = [];
 
   let points = 1;

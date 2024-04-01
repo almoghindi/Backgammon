@@ -46,11 +46,33 @@ export async function userJoin(req, res, next) {
 // save win/lose to opponent/username in database
 export async function saveGame(req, res, next) {
   try {
+    console.log("save game");
     const { username, opponent, isWin, points } = req.body;
+    console.log(req.body);
     if (!username || !opponent || isWin === undefined || isWin === null)
       return res.status(404).send("Bad request");
-    const user = await User.findOne({ username: username });
-    const opponentModel = await User.findOne({ username: opponent });
+    let user = await User.findOne({ username: username });
+    if (!user) {
+      user = new User({
+        username: username,
+        stats: {
+          wins: 0,
+          losses: 0,
+          points: 0,
+        },
+      });
+    }
+    let opponentModel = await User.findOne({ username: opponent });
+    if (!opponentModel) {
+      opponentModel = new User({
+        username: opponent,
+        stats: {
+          wins: 0,
+          losses: 0,
+          points: 0,
+        },
+      });
+    }
     if (!user || !opponentModel) return res.status(404).send("User not found");
     if (isWin) {
       user.stats.wins += 1;
@@ -70,6 +92,7 @@ export async function saveGame(req, res, next) {
 
 export async function endGame(req, res, next) {
   try {
+    console.log("end game");
     const { username, opponent } = req.body;
     if (!username || !opponent) return res.status(404).send("Bad request");
     const gameId = getGameId(username, opponent);
@@ -187,6 +210,18 @@ export async function getFirstPlayer(req, res, next) {
     const result = chance > 50 ? players[0] : players[1];
     setFirstPlayer(gameId, result);
     return res.status(200).json({ result });
+  } catch (err) {
+    return res.status(500).send("Internal server error");
+  }
+}
+
+export async function getUserDetails(req, res, next) {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ username: username });
+    console.log(user);
+    if (!user) return res.status(404).send("User not found");
+    return res.status(200).json({ user });
   } catch (err) {
     return res.status(500).send("Internal server error");
   }
