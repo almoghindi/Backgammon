@@ -62,7 +62,7 @@ const UserDetails = (props: { username: string }) => {
     <Container sx={{ width: "max-content" }}>
       <img src={backgammon} alt="backgammon" style={{ height: "300px" }} />
       <Typography variant="h3">{userDetails.username}</Typography>
-      <Typography variant="h5">Rank {userDetails.stats.points}</Typography>
+      <Typography variant="h5">General Score: {userDetails.stats.points}</Typography>
       <Typography>
         W/L {userDetails.stats.wins}/{userDetails.stats.losses}
       </Typography>
