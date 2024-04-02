@@ -29,7 +29,7 @@ const NavBar: React.FC = () => {
       {isLoading && <LoadingSpinner />}
       <AppBar position="static" sx={{ backgroundColor: `#7EA8BE` }}>
         <Toolbar>
-          <img src={logo} alt="Logo" style={{ maxWidth: 60, margin: "1em" }} />
+          <img src={logo} alt="Logo" style={{ maxWidth: 50, margin: "1em" }} />
           <div style={{ flexGrow: 1, color: "#F6F0ED" }}>
             <Typography variant="h5">Talkback</Typography>
             <Typography>Online backgammon</Typography>

@@ -3,6 +3,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { Container, Typography } from "@mui/material";
 import { useHttpClient } from "../../hooks/useHttp";
 import axios from "axios";
+import { debounce } from "../../utils/debounce";
 
 import backgammon from "../../assets/backgammon1.jpg";
 
@@ -49,7 +50,7 @@ const UserDetails = (props: { username: string }) => {
       }
       console.log(err);
     }
-  }, [sendRequest, username]);
+  }, [username]);
 
   useEffect(() => {
     fetchUserDetails();
@@ -58,13 +59,15 @@ const UserDetails = (props: { username: string }) => {
   useEffect(() => {
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        fetchUserDetails();
+        const debounceFetchUserDetails = debounce(fetchUserDetails, 2000);
+        debounceFetchUserDetails();
       }
     });
     return () => {
       document.removeEventListener("visibilitychange", () => {
         if (!document.hidden) {
-          fetchUserDetails();
+          const debounceFetchUserDetails = debounce(fetchUserDetails, 2000);
+          debounceFetchUserDetails();
         }
       });
     };
@@ -80,8 +83,11 @@ const UserDetails = (props: { username: string }) => {
       <Typography variant="h5">
         General Score: {userDetails.stats.points}
       </Typography>
-      <Typography>
-        W/L {userDetails.stats.wins}/{userDetails.stats.losses}
+      <Typography sx={{ color: "#F0E68C" }}>
+        Wins: {userDetails.stats.wins}
+      </Typography>
+      <Typography sx={{ color: "salmon" }}>
+        Losses: {userDetails.stats.losses}
       </Typography>
     </Container>
   );
