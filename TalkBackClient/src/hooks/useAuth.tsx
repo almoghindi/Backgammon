@@ -103,5 +103,35 @@ export const useAuth = () => {
     }
   }, [token, refreshToken, tokenExpirationDate, login, logout]);
 
+  useEffect(() => {
+    const handleFocus = async () => {
+      const storedDataJSON = localStorage.getItem("userData");
+      if (storedDataJSON) {
+        const storedData: UserAuthData = JSON.parse(storedDataJSON);
+        if (new Date(storedData.expiration) < new Date()) {
+          console.log("Token expired. Attempting to refresh...");
+          try {
+            const accessToken = await refresh(storedData.refreshToken);
+            login(
+              storedData.userId,
+              accessToken,
+              storedData.refreshToken,
+              storedData.username
+            );
+          } catch (error) {
+            console.error("Error during token refresh:", error);
+            logout(); 
+          }
+        }
+      }
+    };
+  
+    window.addEventListener('focus', handleFocus);
+  
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [login, logout, refresh]);
+
   return { token, login, logout, userId, username };
 };

@@ -1,14 +1,20 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { chatSocket as socket } from "../../utils/socketConnection";
+import {
+  onlineUsersSocket,
+  chatSocket as socket,
+} from "../../utils/socketConnection";
 import { AuthContext } from "../../context/auth-context";
 import LoadingSpinner from "../../components/LoadingSpinner.js";
-import { Divider, Typography } from "@mui/material";
+import { Divider, Typography, IconButton } from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+
 import ChatInput from "../../components/Chat/ChatInput/ChatInput.tsx";
 import MessageModel from "../../types/message.model.tsx";
 import ChatMessagesBlock from "../../components/Chat/ChatMessagesBlock/ChatMessagesBlock";
 import { useHttpClient } from "../../hooks/useHttp.tsx";
 import { v4 as uuidv4 } from "uuid";
 import "./ChatWindow.css";
+import GameInviting from "../OnlineUsers/GameInviting.tsx";
 
 interface UserData {
   username: string;
@@ -34,6 +40,8 @@ interface SendMessageResponse {
 export default function ChatWindow(props: Props) {
   const { chatBuddyUsername } = props;
   const [messages, setMessages] = useState<MessageModel[]>([]);
+  const [openGameInvitingModal, setOpenGameInvitingModal] = useState(false);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(true);
   const auth = useContext(AuthContext);
@@ -160,12 +168,35 @@ export default function ChatWindow(props: Props) {
     };
   }, [username]);
 
+  const openGameInviting = () => {
+    sendGameInviting();
+    setOpenGameInvitingModal(true);
+  };
+
+  const closeGameInviting = () => {
+    setOpenGameInvitingModal(false);
+    onlineUsersSocket.emit("invite-canceled", chatBuddyUsername);
+  };
+  const sendGameInviting = async () => {
+    try {
+      await sendRequest(
+        `http://localhost:3004/api/users/online/game-invite`,
+        "POST",
+        { from: username, to: chatBuddyUsername }
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <>
       {isLoadingMessages && <LoadingSpinner />}
       <div style={{ backgroundColor: "#787878" }}>
         <div className="chat-window-header">
           <Typography>Chat with: {chatBuddyUsername}</Typography>
+          <IconButton edge="end" onClick={openGameInviting}>
+            <PlayArrowIcon sx={{ color: "white", marginRight: "20px" }} />
+          </IconButton>
         </div>
         <Divider />
         <ChatMessagesBlock
@@ -179,6 +210,11 @@ export default function ChatWindow(props: Props) {
           }
         />
       </div>
+      <GameInviting
+        open={openGameInvitingModal}
+        onClose={closeGameInviting}
+        username={chatBuddyUsername}
+      />
     </>
   );
 }
