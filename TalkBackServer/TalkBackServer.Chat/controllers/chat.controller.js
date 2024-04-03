@@ -1,13 +1,16 @@
 import Chat from "../models/message.js";
 import { emitEventToUser } from "../app.js";
 import { addUserToSocketMap } from "../app.js";
+import redisClient from "../cache/redisClient.js";
 import axios from "axios";
+
+let isCaching = false;
 
 export async function saveMessage(req, res, next) {
   const { messageData } = req;
-  console.log(messageData);
   try {
     let chat;
+    isCaching = false;
     if (!req.chatId) {
       chat = await getChat(messageData.sender, messageData.reciever);
     } else {
@@ -25,6 +28,7 @@ export async function saveMessage(req, res, next) {
     };
     chat.messages.push(message);
     await chat.save();
+    await redisClient.hSet("chat", chat.chatId, JSON.stringify(chat));
     return res;
   } catch (err) {
     return next(err);
@@ -32,14 +36,19 @@ export async function saveMessage(req, res, next) {
 }
 
 export async function enterChat(req, res, next) {
-  console.log("in enter chattttt");
-  const { data, to } = req.body;
-  if (!data || !to) return res.status(400).send("no data sent");
-  console.log("data ");
-  addUserToSocketMap(data);
-  emitEventToUser("user-joined", data.username, to);
-  const chatId = (await getChat(data.username, to)).chatId;
-  res.status(200).send();
+  try {
+    const { data, to } = req.body;
+    if (!data || !to) return res.status(400).send("no data sent");
+    addUserToSocketMap(data);
+    emitEventToUser("user-joined", data.username, to);
+    const chatId = (await getChat(data.username, to)).chatId;
+    res.status(200).send();
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "An error occurred" });
+  }
 }
 
 export async function sendMessage(req, res, next) {
@@ -77,8 +86,6 @@ export async function sendMessage(req, res, next) {
       isSent: false,
       isError: true,
     };
-    console.log(err.errors);
-    console.log(req.messageData);
     return res
       .status(500)
       .json({ success: false, message: "Message couldn't be sent" });
@@ -88,12 +95,6 @@ export async function sendMessage(req, res, next) {
 export async function leaveChat(req, res, next) {
   try {
     const { sender, to } = req.body;
-    const message = {
-      sender,
-      content: `${sender} disconnected`,
-      isAdmin: true,
-      timestamp: new Date(),
-    };
     const chatId = (await getChat(sender, to)).chatId;
     req.messageData = {
       ...message,
@@ -115,24 +116,26 @@ export async function getChatBySenderReciever(req, res, next) {
 
 export async function getChat(sender, reciever) {
   try {
-    const id = `${sender}&${reciever}`;
-    const revId = `${reciever}&${sender}`;
-    let chat = await Chat.findOne({ chatId: id });
-    if (!chat) {
-      chat = await Chat.findOne({ chatId: revId });
-    }
-    if (!chat) {
-      chat = new Chat({ chatId: id, messages: [] });
-    }
-    return chat;
+    const chatId = getChatId(sender, reciever);
+    return getChatById(chatId);
   } catch (err) {
     console.error(err);
     throw err;
   }
 }
 
+const getChatId = (sender, reciever) => {
+  return [sender, reciever].sort().join("&");
+};
+
 export async function getChatById(chatId) {
   try {
+    if (isCaching) {
+      const cachedChat = await redisClient.hGet("chat", chatId);
+      if (cachedChat) {
+        return JSON.parse(cachedChat);
+      }
+    }
     let chat = await Chat.findOne({ chatId: chatId });
     if (!chat) {
       chat = new Chat({
@@ -140,6 +143,7 @@ export async function getChatById(chatId) {
         messages: [],
       });
     }
+    isCaching = true;
     return chat;
   } catch (err) {
     throw err;
