@@ -7,6 +7,8 @@
   __React.js__ | __TypeScript__ | __Electron__
 ### Backend
   __Express.js__ | __Socket.io__ | __Docker__ | __Redis__
+### Containerization
+  __Docker__ | __Docker-Compose__
 ### Database
   __MongoDB__
 
@@ -32,6 +34,7 @@
 ### Microservices Architecture
  - Microservice for each backend service
  - Containerization with Docker
+ - Multi-container management with Docker Compose
 
 ## Requirements
 
