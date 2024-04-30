@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import useTimer from "./useTimer";
 import { useMemo } from "react";
 
@@ -15,7 +15,19 @@ export default function Timer(props: { timer: number }) {
 
   return (
     <>
-      <Typography>Time: {formattedTime}</Typography>
+      <div
+        style={{
+          backgroundColor: "#A9927D",
+          padding: ".5em",
+          borderRadius: "5px",
+          border: "3px solid #040F0F",
+          color: "#000",
+          fontWeight: "extra-bold",
+          boxShadow: "1px 1px 5px #040F0F inset",
+        }}
+      >
+        <Typography>Time: {formattedTime}</Typography>
+      </div>
     </>
   );
 }
