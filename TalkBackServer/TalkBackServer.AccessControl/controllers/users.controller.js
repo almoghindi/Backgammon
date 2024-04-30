@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error.js";
-import User from "../models/user.js";
-import Token from "../models/token.js";
+import User from "../models/User.js";
+import Token from "../models/Token.js";
 
 import {
   generateToken,
