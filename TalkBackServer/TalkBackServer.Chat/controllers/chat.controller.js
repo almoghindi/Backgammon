@@ -1,4 +1,4 @@
-import Chat from "../models/message.js";
+import Chat from "../models/Message.js";
 import { emitEventToUser } from "../app.js";
 import { addUserToSocketMap } from "../app.js";
 import redisClient from "../cache/redisClient.js";
